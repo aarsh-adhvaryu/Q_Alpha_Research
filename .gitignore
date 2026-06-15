@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# uv
+uv.lock
+
+# Reports / scratch
+reports/*.html
+reports/*.png
+.ipynb_checkpoints/
+
+# Secrets — research agents may use API keys (LLM / news / data vendors); never commit them
+.env
+*.env
+!.env.example
+secrets/
