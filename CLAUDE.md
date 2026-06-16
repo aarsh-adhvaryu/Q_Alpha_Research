@@ -96,10 +96,20 @@ src/qalpha_research/
     1.20→1.29; **COVID-2020 drawdown −25.2→−9.7, Sharpe 1.55→2.47.** exp_hedge.py (P2) refactored onto
     the tested module (reproduces P2 exactly). Caveats: coincident gauge (partial protection), only
     COVID is a severe crash in the 2012–26 book window, F&O tax modelled simply, single h=0.5.
-  - **▶ P3 REMAINING levers (not yet built):** **puts** (convex/defined-risk vs the linear futures),
-    **sector rotation** (concentrated froth → new money to cheaper sectors), the **tax-minimised-sell**
-    fallback (sell only when avoided-loss > realised-tax). Also: true-valuation fragility inputs (P/E,
-    credit-tightness, concentration) to give the gauge *lead* (currently coincident).
+  - **✅ P3 PUTS DONE — futures beat puts (honest)** (`regime/options.py` [bs_put + apply_put_hedge,
+    BS priced with India VIX, tested no-look-ahead/crash/keeps-upside], `tests/test_options.py`,
+    `scripts/exp_puts.py`, `reports/puts_findings.md`). On Nifty 2008–26 both hedges beat unhedged, but
+    **short futures > puts**: in the deep grinding 2008 crash the linear short rides the whole decline
+    (DD −46.7→−34.1) vs the OTM put's bounded/decaying protection (−40.4); close in the sharp COVID V.
+    The put's keep-the-upside edge barely shows because the gauge is **selective** (calm 2017 → never
+    fired → zero premium drag; all legs identical). Puts would win with a noisier/earlier gauge; with
+    this coincident one they don't. **→ Short futures is the recommended hedge instrument.**
+  - **▶ P3 REMAINING (lower priority / data-blocked):** **sector rotation** (needs sector decomposition
+    + a concentrated-vs-systemic classifier the gauge doesn't yet have); **tax-minimised-sell** fallback
+    (a live-advisor decision rule — sell only when avoided-loss > realised-tax — more than a clean
+    backtest); **leading-valuation fragility inputs** (P/E, credit-tightness, concentration) to give the
+    gauge *lead* — **data-blocked here** (same fundamentals-sourcing problem; FRED keyless capped, no
+    niftyindices P/E feed). The gauge stays coincident until that data is sourced.
 - **Deferred (after Sprint 2):** fresh-capital deploy-throttle; agentic news/macro track; LPPLS on
   midcaps/single names (its real habitat).
 - **Compute:** CPU by default. GPU only for quantum scaling (cuQuantum Aer) or a local-LLM agentic
