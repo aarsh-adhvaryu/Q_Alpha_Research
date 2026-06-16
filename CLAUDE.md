@@ -88,9 +88,18 @@ src/qalpha_research/
     regime overlay to clear the bar — the **tax-free HEDGE wins where Sprint 1's SELL overlay failed**
     (tax was the killer, confirmed). Caveats: price index not TRI, F&O tax modelled simply, coincident
     gauge → partial protection, single market.
-  - **▶ P3 NEXT:** the hedge on the **qalpha strategy book** (vs always-invested + 1/N, the product
-    baseline) + **puts** (convex, defined-risk) + **sector rotation** + the **tax-minimised-sell**
-    fallback. Likely promote `_hedge_active`/`_run_hedge` from the script into a tested package module.
+  - **✅ P3 CORE DONE — hedge on the qalpha strategy book also clears the bar** (`regime/hedge.py`
+    [tested module: `hedge_active` + `apply_futures_hedge`, no-look-ahead lag encapsulated],
+    `tests/test_hedge.py`, `scripts/exp_hedge_book.py`, `reports/hedge_book_findings.md`). Nifty-futures
+    hedge on the validated annual-shrink book (exposure≡1.0, fidelity 0.0), 2012–26, holdings never
+    sold: **FULL Sharpe 1.08→1.13, maxDD −25.2→−22.5, CAGR ~flat, still beats 1/N**; OOS 2018+ Sharpe
+    1.20→1.29; **COVID-2020 drawdown −25.2→−9.7, Sharpe 1.55→2.47.** exp_hedge.py (P2) refactored onto
+    the tested module (reproduces P2 exactly). Caveats: coincident gauge (partial protection), only
+    COVID is a severe crash in the 2012–26 book window, F&O tax modelled simply, single h=0.5.
+  - **▶ P3 REMAINING levers (not yet built):** **puts** (convex/defined-risk vs the linear futures),
+    **sector rotation** (concentrated froth → new money to cheaper sectors), the **tax-minimised-sell**
+    fallback (sell only when avoided-loss > realised-tax). Also: true-valuation fragility inputs (P/E,
+    credit-tightness, concentration) to give the gauge *lead* (currently coincident).
 - **Deferred (after Sprint 2):** fresh-capital deploy-throttle; agentic news/macro track; LPPLS on
   midcaps/single names (its real habitat).
 - **Compute:** CPU by default. GPU only for quantum scaling (cuQuantum Aer) or a local-LLM agentic
