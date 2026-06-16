@@ -6,6 +6,9 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "numpy>=1.26",
+    # Gaussian HMM for the regime/risk-state track. Used (not reimplemented) so the signal is the
+    # model working, not a hand-rolled Baum-Welch bug; validated by a synthetic-recovery test.
+    "hmmlearn>=0.3",
     # The validated product engine. Imported (never copied) so every research claim is checked
     # against the exact same tax-aware FIFO/cost/backtest code that trades. Source pinned below.
     "qalpha",
