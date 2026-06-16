@@ -54,7 +54,19 @@ src/qalpha_research/
   rescue a *sell* overlay (more firing → more tax). **Rescope:** only a tax-free **fresh-capital
   deploy-throttle** (route new SIP inflows to cash in stress, never sell) is worth testing — needs a
   contribution stream the lump-sum book lacks; else keep risk-state as a dashboard reporting signal.
-- **🎯 ACTIVE PLAN — Sprint 2: systemic-fragility gauge + tax-FREE hedge overlay** (pre-registered,
+- **🏁 SPRINT 2 CONCLUDED (2026-06-16).** Result: the **tax-free short-futures hedge on a selective,
+  cause-agnostic systemic-stress gauge** is the track's first positive — clears the pre-registered bar
+  on the index (OOS-robust) AND on the qalpha book (Sharpe 1.08→1.13, beats 1/N, **COVID DD −25→−10**);
+  futures beat puts (the selective gauge negates put convexity). The whole regime arc is one honest
+  story: **LPPLS negative → HMM sell-overlay negative (tax drag) → tax-free hedge positive** — *the tax
+  was always the killer; hedge, don't sell.* **USER DECISION: keep everything in research as a proven
+  capstone; do NOT promote into the qalpha product now** (keeps qalpha pristine/resume-clean). If
+  revisited later, the safe first promotion is **the gauge as a read-only dashboard advisory signal**
+  ("systemic risk: normal/elevated" + a 'consider a hedge' suggestion — fits the advisor model, no
+  derivatives in the core); the actual futures-hedge execution would be a separate **gated Phase-1**
+  feature needing real F&O cost/tax re-validation + more-than-COVID crash evidence + a manual-trader
+  operations plan. Deferred research levers below remain open.
+- **🎯 Sprint 2 detail — systemic-fragility gauge + tax-FREE hedge overlay** (pre-registered,
   `regime/PREREGISTRATION_systemic.md`). Chosen with the user after a long design session that reframed
   the whole track. Key reasoning, locked in: (1) crashes come from an **unbounded, unpredictable
   trigger set** (2008 US-housing *contagion* — not an Indian bubble; oil; USD-INR; war; domestic 2018;
