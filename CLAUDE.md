@@ -69,7 +69,28 @@ src/qalpha_research/
   bubble; in a systemic crash correlations→1 so only cash/hedge work). **Phasing:** P1 build+validate
   the gauge (free cross-asset data: FRED/niftyindices/RBI/NSE/AMFI; must elevate before 2000/08/13/18,
   stay calm in benign years, **silent before COVID**) → P2 futures-hedge money test (linear; **F&O =
-  business-income tax**, not CG) → P3 puts + rotation + sell-fallback. **NOW CODING P1.**
+  business-income tax**, not CG) → P3 puts + rotation + sell-fallback.
+  - **✅ P1 DONE** (`regime/fragility.py`, `scripts/build_fragility_dataset.py` → committed
+    `data/fragility_panel.csv` 13 series 1996–2026, `scripts/validate_fragility.py`,
+    `reports/fragility_gauge_validation.md`, tests). Causal no-look-ahead stress composite (US/India
+    vol, MOVE, HYG/LQD credit proxy, DXY, USD-INR, drawdown, India↔global correlation). **Validated:**
+    elevates in every crash (peaks 0.67–0.99), **1% false-alarm** in calm years at τ=0.70. Honest:
+    it's **coincident** (spikes with the drawdown, esp. COVID 0.99) → a hedge/throttle trigger, not a
+    forecast. The price-extension *fragility* sub-score was too always-on (≈0.68 every calm year) →
+    **dropped**; real leading fragility needs true valuation (P/E, credit-tightness, concentration) —
+    a later data task (FRED keyless CSV now capped to ~3y; P/E + FII flows deferred).
+  - **✅ P2 DONE — the tax-free hedge CLEARS THE BAR** (`scripts/exp_hedge.py`,
+    `reports/hedge_findings.md`). Short index-futures overlay on a passive Sensex book 1997–2026
+    (incl. 2008 + COVID), book never sold (no CG tax), net of F&O txn/roll + 30% business-income tax,
+    **1-day execution lag** (fixed an initial same-day look-ahead that had inflated it). Rarely-firing
+    best config (h=0.5, τ=0.7, 6.7% of days): DD −60.9→−53.0, Sharpe 0.55→0.57, CAGR ~flat, cost drag
+    <1pt. **ROBUST OOS (2015+, untuned): DD −38.1→−22.8 (mostly COVID), Sharpe 0.62→0.66.** First
+    regime overlay to clear the bar — the **tax-free HEDGE wins where Sprint 1's SELL overlay failed**
+    (tax was the killer, confirmed). Caveats: price index not TRI, F&O tax modelled simply, coincident
+    gauge → partial protection, single market.
+  - **▶ P3 NEXT:** the hedge on the **qalpha strategy book** (vs always-invested + 1/N, the product
+    baseline) + **puts** (convex, defined-risk) + **sector rotation** + the **tax-minimised-sell**
+    fallback. Likely promote `_hedge_active`/`_run_hedge` from the script into a tested package module.
 - **Deferred (after Sprint 2):** fresh-capital deploy-throttle; agentic news/macro track; LPPLS on
   midcaps/single names (its real habitat).
 - **Compute:** CPU by default. GPU only for quantum scaling (cuQuantum Aer) or a local-LLM agentic
