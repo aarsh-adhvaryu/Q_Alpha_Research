@@ -17,7 +17,9 @@ def _synthetic_bubble(n: int, tc: float, m: float, omega: float) -> np.ndarray:
     dt = tc - t
     # Strong power-law trend, modest oscillation → passes the Bothmer–Meister damping filter.
     a, b, c1, c2 = 9.0, -0.1, 0.003, 0.003
-    log_p = a + b * dt**m + dt**m * (c1 * np.cos(omega * np.log(dt)) + c2 * np.sin(omega * np.log(dt)))
+    log_p = (
+        a + b * dt**m + dt**m * (c1 * np.cos(omega * np.log(dt)) + c2 * np.sin(omega * np.log(dt)))
+    )
     return log_p
 
 

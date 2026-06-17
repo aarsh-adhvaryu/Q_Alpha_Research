@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+from typing import cast
 
 import numpy as np
 import pandas as pd
@@ -18,6 +19,15 @@ from qalpha_research.regime.lppls import confidence_indicator
 
 _ROOT = Path(__file__).resolve().parent.parent
 _DATA = _ROOT / "data" / "nifty50_nifbees_close.csv"
+
+
+def _lead(frame: pd.DataFrame, peak: pd.Timestamp, thr: float) -> str:
+    """First crossing of ``thr`` in ``frame`` reported as lead time (days) before ``peak``."""
+    hit = frame[frame["confidence"] >= thr]
+    if hit.empty:
+        return "—"
+    return f"{(peak - pd.Timestamp(hit.index[0])).days}d"
+
 
 # Pre-registered reference peaks (fixed before results). (label, peak month, endogenous?)
 _REFERENCE = [
@@ -30,7 +40,9 @@ _REFERENCE = [
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--cadence", type=int, default=15, help="evaluate confidence every N trading days")
+    ap.add_argument(
+        "--cadence", type=int, default=15, help="evaluate confidence every N trading days"
+    )
     ap.add_argument("--min-window", type=int, default=60)
     ap.add_argument("--max-window", type=int, default=400)
     ap.add_argument("--step", type=int, default=40)
@@ -59,8 +71,10 @@ def main() -> None:
     rep.mkdir(exist_ok=True)
     out.to_csv(rep / "lppls_nifty_confidence.csv")
 
-    print(f"\nLPPLS confidence over Nifty 50 — {out.index[0].date()} → {out.index[-1].date()} "
-          f"({len(out)} points, cadence {args.cadence}d)\n")
+    print(
+        f"\nLPPLS confidence over Nifty 50 — {out.index[0].date()} → {out.index[-1].date()} "
+        f"({len(out)} points, cadence {args.cadence}d)\n"
+    )
 
     # --- Scorecard vs the pre-registered reference peaks ---
     print("Reference peaks — max confidence & first crossings in the 6 months BEFORE the peak:")
@@ -72,27 +86,30 @@ def main() -> None:
             print(f"{label:<22}{'Y' if endo else 'N':<7}{'(no data)':>8}")
             continue
         maxc = pre["confidence"].max()
-        def lead(thr: float) -> str:
-            hit = pre[pre["confidence"] >= thr]
-            if hit.empty:
-                return "—"
-            return f"{(peak - hit.index[0]).days}d"
-        print(f"{label:<22}{'Y' if endo else 'N':<7}{maxc:>8.2f}{lead(0.3):>12}{lead(0.5):>12}")
+        print(
+            f"{label:<22}{'Y' if endo else 'N':<7}{maxc:>8.2f}"
+            f"{_lead(pre, peak, 0.3):>12}{_lead(pre, peak, 0.5):>12}"
+        )
 
     # --- False-positive view: confidence in "calm" stretches (no reference peak within 6 months) ---
     peak_ts = [pd.Timestamp(p) for _, p, _ in _REFERENCE]
+
     def near_a_peak(d: pd.Timestamp) -> bool:
         return any(abs((d - p).days) <= 183 for p in peak_ts)
+
     calm = out[[not near_a_peak(d) for d in out.index]]
     print("\nCalm stretches (>6mo from any reference peak):")
-    print(f"  points: {len(calm)} | mean conf {calm['confidence'].mean():.2f} | "
-          f"% time ≥0.3: {(calm['confidence'] >= 0.3).mean()*100:.0f}% | "
-          f"% time ≥0.5: {(calm['confidence'] >= 0.5).mean()*100:.0f}%")
+    print(
+        f"  points: {len(calm)} | mean conf {calm['confidence'].mean():.2f} | "
+        f"% time ≥0.3: {(calm['confidence'] >= 0.3).mean() * 100:.0f}% | "
+        f"% time ≥0.5: {(calm['confidence'] >= 0.5).mean() * 100:.0f}%"
+    )
 
     # --- Top elevated episodes overall (for eyeballing) ---
     print("\nMost elevated readings overall:")
     for d, r in out.sort_values("confidence", ascending=False).head(8).iterrows():
-        print(f"  {d.date()}  conf={r['confidence']:.2f}  close={r['close']:.1f}")
+        ts = cast("pd.Timestamp", d)
+        print(f"  {ts.date()}  conf={r['confidence']:.2f}  close={r['close']:.1f}")
 
 
 if __name__ == "__main__":

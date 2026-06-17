@@ -23,7 +23,9 @@ def test_bs_put_sanity() -> None:
     assert bs_put(95, 100, 0.0, 0.20) == 5.0
 
 
-def _frame(ret: np.ndarray, vix_vals: np.ndarray, g: np.ndarray):
+def _frame(
+    ret: np.ndarray, vix_vals: np.ndarray, g: np.ndarray
+) -> tuple[pd.Series, pd.Series, pd.Series, pd.Series]:
     idx = pd.bdate_range("2010-01-03", periods=len(ret))
     rser = pd.Series(ret, index=idx)
     level = pd.Series(1000 * np.exp(np.cumsum(ret)), index=idx)
