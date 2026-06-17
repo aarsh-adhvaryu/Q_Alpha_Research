@@ -122,8 +122,31 @@ src/qalpha_research/
     backtest); **leading-valuation fragility inputs** (P/E, credit-tightness, concentration) to give the
     gauge *lead* — **data-blocked here** (same fundamentals-sourcing problem; FRED keyless capped, no
     niftyindices P/E feed). The gauge stays coincident until that data is sourced.
+- **✅ ROBUSTNESS BATTERY DONE (2026-06-17) — the hedge survives, with one envelope refinement.**
+  Before any product-integration talk, stress-tested the Sprint-2 operating point against its four
+  admitted caveats (pre-reg `regime/PREREGISTRATION_robustness.md`; `scripts/exp_hedge_robustness.py`
+  → `reports/hedge_robustness_findings.md`, `scripts/exp_hedge_crashes.py` →
+  `reports/hedge_crashes_findings.md`; all reuse the tested hedge module + the validated engine,
+  qalpha untouched). **B (decisive) PASS** — the *coincident* gauge's protection survives a realistic
+  2–3 trading-day manual-execution delay (lag 1→3: Sharpe 1.13→1.11, maxDD held −22.5 vs always −25.2)
+  → the load-bearing "can you actually execute it" worry is retired. **C (decisive) PASS** — on
+  1997–2026 Sensex it cut drawdown in **both** deep, differently-caused crashes (2008 GFC −60.9→−52.1
+  AND COVID −38.1→−22.8), calm-year drag 0.63 CAGR pts → **not a COVID one-off; the cause-agnostic
+  claim holds out-of-window** (milder corrections mixed — 2022 slightly worsened by a coincident fire
+  that didn't deepen, honest). **D PASS** — edge holds to ≫10× modelled F&O cost + 40% tax bracket
+  (not a cost mirage). **A PARTIAL** — robust across **every** h and persist at τ∈{0.7,0.8} (24/24),
+  but **τ=0.6 fragile** (3/12): a low threshold hedges too eagerly and a coincident gauge then bleeds
+  CAGR. **Refinement: operate at τ≥0.7; don't run it eager.** A added the cost-override params to
+  `regime/hedge.py` (+test). **Verdict: concrete enough to consider for integration, at τ≥0.7** — but
+  the standing USER DECISION still holds (keep in research; if ever promoted, dashboard advisory first).
 - **Deferred (after Sprint 2):** fresh-capital deploy-throttle; agentic news/macro track; LPPLS on
   midcaps/single names (its real habitat).
+- **✅ Repo-wide gate sweep (2026-06-17):** fixed all outstanding lint/type/format issues across the
+  whole tree (`ruff check .`, `ruff format --check .`, `mypy src scripts tests`, `pytest` all green —
+  30 files, 22 passed/1 skipped). Notable real fix: a `B023` late-binding closure bug in
+  `scripts/run_lppls_nifty.py` (the `lead` fn captured loop vars `pre`/`peak`) → hoisted to a
+  `_lead(frame, peak, thr)` helper; plus two `Hashable.date()` mypy fixes and a missing test
+  annotation. mypy had also crashed on a corrupt `.mypy_cache` (fresh-sync artifact) — `rm -rf` fixed.
 - **Compute:** CPU by default. GPU only for quantum scaling (cuQuantum Aer) or a local-LLM agentic
   design — not for HMM/valuation/LPPLS (those would leave the card idle). User has GPU available on ask.
 

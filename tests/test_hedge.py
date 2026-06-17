@@ -66,3 +66,30 @@ def test_hedge_cuts_a_synthetic_crash() -> None:
     hedged = apply_futures_hedge(rser, rser, active, h=1.0, apply_costs=True).equity
     unhedged = (1.0 + rser).cumprod()
     assert hedged.iloc[-1] > unhedged.iloc[-1]  # the hedge paid through the crash
+
+
+def test_cost_overrides_scale_frictions() -> None:
+    """Scaling the cost-override params raises total cost/tax monotonically (experiment-D knob).
+
+    Defaults must reproduce the module-constant behaviour, and higher cost/tax multiples can only
+    add drag — never reduce it — so the stress sweep is a genuine worst-case, not a re-tuning.
+    """
+    n = 300
+    rng = np.random.default_rng(3)
+    ret = _series(n, rng.normal(0.0004, 0.012, n))
+    gauge = _series(n, np.where(np.arange(n) % 60 < 15, 0.9, 0.1))  # fires in bursts → episodes
+    active = hedge_active(gauge, tau=0.7, persist=3)
+
+    base = apply_futures_hedge(ret, ret, active, h=0.5)  # defaults = module constants
+    explicit = apply_futures_hedge(
+        ret, ret, active, h=0.5, cost_event=0.0003, cost_roll=0.0005, fno_tax=0.30
+    )
+    np.testing.assert_allclose(base.equity.to_numpy(), explicit.equity.to_numpy(), atol=1e-12)
+
+    stressed = apply_futures_hedge(
+        ret, ret, active, h=0.5, cost_event=0.0006, cost_roll=0.0010, fno_tax=0.40
+    )
+    assert base.episodes > 0  # the gauge actually fired, so costs are exercised
+    assert stressed.cost > base.cost
+    assert stressed.tax >= base.tax
+    assert stressed.equity.iloc[-1] < base.equity.iloc[-1]  # more friction → less wealth

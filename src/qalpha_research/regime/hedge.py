@@ -60,6 +60,9 @@ def apply_futures_hedge(
     h: float,
     execution_lag: int = 1,
     apply_costs: bool = True,
+    cost_event: float = COST_EVENT,
+    cost_roll: float = COST_ROLL,
+    fno_tax: float = FNO_TAX,
 ) -> HedgeResult:
     """Overlay a short index-futures hedge on a book given its and the index's daily returns.
 
@@ -67,6 +70,9 @@ def apply_futures_hedge(
     ``index_ret`` — the hedging index's daily returns (Nifty futures underlying).
     ``active`` — causal hedge state from ``hedge_active``; lagged by ``execution_lag`` here so the
     position carried into day t was decided on data ≤ t-lag (no look-ahead).
+    ``cost_event`` / ``cost_roll`` / ``fno_tax`` — friction overrides (default = the module
+    constants). Exposed so the robustness battery can stress crash-time cost/tax widening
+    (`PREREGISTRATION_robustness.md`, experiment D) without monkeypatching the module.
     """
     idx = pd.DatetimeIndex(book_ret.index)
     pos = active.reindex(idx).fillna(False).astype(bool)
@@ -90,17 +96,17 @@ def apply_futures_hedge(
         episode_pnl += hedge_r * pv_before
         notional = h * pv
         if on != prev:
-            c = COST_EVENT * notional if apply_costs else 0.0
+            c = cost_event * notional if apply_costs else 0.0
             pv -= c
             total_cost += c
             if on:
                 episodes += 1
         if on and bool(month_end.loc[t]):
-            c = COST_ROLL * notional if apply_costs else 0.0
+            c = cost_roll * notional if apply_costs else 0.0
             pv -= c
             total_cost += c
         if prev and not on:  # episode closed → tax the net hedge GAIN as business income
-            tax = FNO_TAX * max(0.0, episode_pnl) if apply_costs else 0.0
+            tax = fno_tax * max(0.0, episode_pnl) if apply_costs else 0.0
             pv -= tax
             total_tax += tax
             episode_pnl = 0.0
