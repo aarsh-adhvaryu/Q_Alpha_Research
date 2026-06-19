@@ -6,7 +6,7 @@ _Forward paper overlay of the Sprint-2 gauge-triggered short-futures hedge on a 
 
 | | |
 |---|---|
-| Systemic-stress gauge | 🟢 **0.49** (calm) |
+| Systemic-stress gauge | 🟢 **0.47** (calm) |
 | Hedge state | **— hedge off** |
 | Forward paper days | 1 |
 | Hedge episodes so far | 0 |
@@ -15,8 +15,8 @@ _Forward paper overlay of the Sprint-2 gauge-triggered short-futures hedge on a 
 
 | Book | Return | Final |
 |---|---|---|
-| Unhedged NIFTY | -1.00% | 0.9900 |
-| Hedged (paper) | -1.00% | 0.9900 |
+| Unhedged NIFTY | -0.64% | 0.9936 |
+| Hedged (paper) | -0.64% | 0.9936 |
 
 Hedge effect to date: **+0.00 pts** (F&O cost 0.00% + tax 0.00% of book, both modelled).
 
