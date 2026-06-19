@@ -37,6 +37,22 @@ src/qalpha_research/
 
 ## ⏯️ STATE / NEXT SESSION
 
+- **▶ HEDGE FORWARD PAPER RUN LIVE (2026-06-19)** (`regime/hedge_paper.py` + `tests/test_hedge_paper.py`,
+  `scripts/hedge_paper.py`, `scripts/hedge_dashboard_app.py`, `.github/workflows/hedge_paper.yml`,
+  `requirements.txt`, `deploy/DEPLOY_STREAMLIT_HEDGE.md`). *Why:* user wants the proven hedge run
+  **forward in real time, in parallel with the product's paper run**, so if it holds up live it can be
+  integrated alongside the product GO ~6 months out — "it's research so it's ok if it takes time, I
+  want this applied eventually." *What:* the SAME validated machinery (`compute_fragility` →
+  `hedge_active` → `apply_futures_hedge`) run forward on a passive Nifty book from a fixed
+  `FORWARD_START=2026-06-19` (τ=0.7, persist 5, h=0.5). **Stateless** — the cross-asset panel IS the
+  state, so each daily cron recompute (refresh panel from yfinance → recompute → commit
+  `data/hedge_paper_track.csv` + `reports/hedge_paper_dashboard.md`) can't drift; the gauge runs over
+  full causal history, the equity curves only over the forward window. **No real derivatives traded**
+  (models F&O cost + 30% tax). Own **Streamlit dashboard** (`dashboard` extra) deploys to Streamlit
+  Cloud like the product (`requirements.txt`, `-e .`). **Honest caveat (load-bearing):** the gauge is
+  *coincident* and crashes are rare → a calm window keeps the hedge OFF and the curves identical; its
+  GO legitimately **waits on a real stress event** (can't be scheduled). Product still never imports
+  from here — integration, when it comes, is via the committed track-record CSV (data, not code).
 - **✅ hedge.py open-episode tax bug FIXED (2026-06-19)** (`regime/hedge.py`, `tests/test_hedge.py`).
   *What:* `apply_futures_hedge` taxed an episode's F&O gain only on its ON→OFF *close*; a window that
   ended **mid-hedge** never hit that branch, so the last open episode's gain went untaxed → an
