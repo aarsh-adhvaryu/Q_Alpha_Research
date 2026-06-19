@@ -15,8 +15,8 @@ _Forward paper overlay of the Sprint-2 gauge-triggered short-futures hedge on a 
 
 | Book | Return | Final |
 |---|---|---|
-| Unhedged NIFTY | -0.64% | 0.9936 |
-| Hedged (paper) | -0.64% | 0.9936 |
+| Unhedged NIFTY | -0.30% | 0.9970 |
+| Hedged (paper) | -0.30% | 0.9970 |
 
 Hedge effect to date: **+0.00 pts** (F&O cost 0.00% + tax 0.00% of book, both modelled).
 
