@@ -33,6 +33,17 @@ FORWARD_START = date(2026, 6, 19)
 DEFAULT_TAU = 0.7
 DEFAULT_PERSIST = 5
 DEFAULT_H = 0.5
+_GAUGE_HISTORY_DAYS = 504  # ~2 trading years of gauge to chart as context (real cross-asset data)
+
+# The validated backtest evidence this forward run is re-testing (from reports/hedge_book_findings.md
+# + hedge_findings.md). Shown as context so a calm forward day still conveys the real-world proof.
+BACKTEST_CONTEXT: dict[str, str] = {
+    "window": "qalpha book 2012–26 (incl. COVID); index 1997–2026 (incl. 2008 GFC + COVID)",
+    "full_book": "Sharpe 1.08→1.13, maxDD −25.2→−22.5, CAGR ~flat, still beats 1/N",
+    "covid_2020": "drawdown −25.2→−9.7, Sharpe 1.55→2.47",
+    "index_2008_covid": "2008 GFC DD −60.9→−52.1 · COVID −38.1→−22.8 (OOS, untuned)",
+    "robustness": "survives 2–3d execution lag, ≫10× cost + 40% tax bracket; operate at τ≥0.7",
+}
 
 
 @dataclass(frozen=True)
@@ -47,6 +58,7 @@ class HedgePaperResult:
     h: float
     gauge_now: float
     hedge_on: bool
+    gauge_history: pd.Series  # trailing ~2y of the systemic-stress gauge (real data, charts daily)
     hedged: pd.Series  # forward paper equity of the hedged book (starts at 1.0 on forward_start)
     unhedged: pd.Series  # forward paper equity of the unhedged book (starts at 1.0)
     episodes: int
@@ -103,7 +115,8 @@ def forward_hedge_track(
     unhedged = (1.0 + fwd_ret).cumprod()
 
     as_of = base_ret.index[-1].date() if len(base_ret) else forward_start
-    gauge_now = float(g.dropna().iloc[-1]) if len(g.dropna()) else 0.0
+    gauge_clean = g.dropna()
+    gauge_now = float(gauge_clean.iloc[-1]) if len(gauge_clean) else 0.0
     hedge_on = bool(active.iloc[-1]) if len(active) else False
     return HedgePaperResult(
         forward_start=forward_start,
@@ -114,6 +127,7 @@ def forward_hedge_track(
         h=h,
         gauge_now=gauge_now,
         hedge_on=hedge_on,
+        gauge_history=gauge_clean.tail(_GAUGE_HISTORY_DAYS),
         hedged=res.equity,
         unhedged=unhedged,
         episodes=res.episodes,

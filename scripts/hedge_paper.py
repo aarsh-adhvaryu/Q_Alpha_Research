@@ -22,6 +22,7 @@ import pandas as pd
 from build_fragility_dataset import SERIES, fetch_series
 
 from qalpha_research.regime.hedge_paper import (
+    BACKTEST_CONTEXT,
     HedgePaperResult,
     forward_hedge_track,
     track_record_csv,
@@ -84,6 +85,15 @@ def _render_markdown(res: HedgePaperResult) -> str:
         "",
         f"Hedge effect to date: **{diff:+.2f} pts** "
         f"(F&O cost {res.cost * 100:.2f}% + tax {res.tax * 100:.2f}% of book, both modelled).",
+        "",
+        "## Validated backtest evidence (what this forward run re-tests)",
+        "",
+        f"_{BACKTEST_CONTEXT['window']}._",
+        "",
+        f"- **Full book:** {BACKTEST_CONTEXT['full_book']}",
+        f"- **COVID 2020:** {BACKTEST_CONTEXT['covid_2020']}",
+        f"- **Index 2008 + COVID:** {BACKTEST_CONTEXT['index_2008_covid']}",
+        f"- **Robustness:** {BACKTEST_CONTEXT['robustness']}",
         "",
         "## Honest read",
         "",

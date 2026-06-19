@@ -18,7 +18,11 @@ import pandas as pd
 import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-from qalpha_research.regime.hedge_paper import HedgePaperResult, forward_hedge_track
+from qalpha_research.regime.hedge_paper import (
+    BACKTEST_CONTEXT,
+    HedgePaperResult,
+    forward_hedge_track,
+)
 
 PANEL_CSV = Path("data/fragility_panel.csv")
 
@@ -54,6 +58,14 @@ def main() -> None:
 
     st.subheader(f"{badge} Hedge {'ENGAGED' if res.hedge_on else 'standing by'}")
 
+    # The systemic-stress gauge over ~2 years of real cross-asset data — informative every day, even
+    # while the forward paper curve is flat (calm market → hedge off).
+    if len(res.gauge_history) > 1:
+        st.markdown("**Systemic-stress gauge — last ~2 years** (hedge fires above the τ line)")
+        gh = res.gauge_history.rename("gauge").to_frame()
+        gh["τ (fire threshold)"] = res.tau
+        st.line_chart(gh)
+
     if res.days:
         chart = pd.DataFrame(
             {"Unhedged": res.unhedged, "Hedged (paper)": res.hedged.reindex(res.unhedged.index)}
@@ -63,6 +75,16 @@ def main() -> None:
         d1.metric("Unhedged return", f"{res.unhedged_return:+.2%}")
         d2.metric("Hedged return", f"{res.hedged_return:+.2%}")
         d3.metric("Hedge effect", f"{(res.hedged_return - res.unhedged_return) * 100:+.2f} pts")
+
+    with st.expander(
+        "📊 Validated backtest evidence (what this forward run is re-testing)", expanded=True
+    ):
+        st.caption(f"Window: {BACKTEST_CONTEXT['window']}")
+        b1, b2 = st.columns(2)
+        b1.markdown(f"**Full book** — {BACKTEST_CONTEXT['full_book']}")
+        b1.markdown(f"**COVID 2020** — {BACKTEST_CONTEXT['covid_2020']}")
+        b2.markdown(f"**Index 2008 + COVID** — {BACKTEST_CONTEXT['index_2008_covid']}")
+        b2.markdown(f"**Robustness** — {BACKTEST_CONTEXT['robustness']}")
 
     st.info(
         "The gauge is **coincident** and severe crashes are rare → a calm window keeps the hedge OFF "
