@@ -23,6 +23,12 @@ dev = [
     "pandas-stubs>=2.2",
     "types-pyyaml",
 ]
+# Forward hedge paper-run dashboard (regime/hedge_paper.py). UI-only; not needed by CI or the cron.
+# Install with `uv sync --extra dashboard`. yfinance powers the daily panel refresh.
+dashboard = [
+    "streamlit>=1.37",
+    "yfinance>=0.2",
+]
 # Quantum track (Q_alpha.md §15): heavy + AUM-gated. Install with `uv sync --extra quantum`.
 # The QAOA tests skip without it; the QUBO/exact/SA tests run on numpy alone.
 quantum = [
