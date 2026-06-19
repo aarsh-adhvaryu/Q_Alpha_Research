@@ -50,8 +50,14 @@ def test_no_look_ahead() -> None:
     trunc = apply_futures_hedge(
         ret.iloc[:cut], ret.iloc[:cut], hedge_active(gauge.iloc[:cut], 0.7, 5), h=1.0
     )
+    # Compare up to the bar before the cut: the truncated run's *final* bar may legitimately differ
+    # by the terminal-episode settlement (an open hedge at a window's end is taxed), which the full
+    # run defers because the episode continues. Every earlier bar must be identical (no look-ahead).
     np.testing.assert_allclose(
-        full.equity.iloc[:cut].to_numpy(), trunc.equity.to_numpy(), rtol=0, atol=1e-12
+        full.equity.iloc[: cut - 1].to_numpy(),
+        trunc.equity.iloc[:-1].to_numpy(),
+        rtol=0,
+        atol=1e-12,
     )
 
 
@@ -66,6 +72,25 @@ def test_hedge_cuts_a_synthetic_crash() -> None:
     hedged = apply_futures_hedge(rser, rser, active, h=1.0, apply_costs=True).equity
     unhedged = (1.0 + rser).cumprod()
     assert hedged.iloc[-1] > unhedged.iloc[-1]  # the hedge paid through the crash
+
+
+def test_open_episode_at_window_end_is_taxed() -> None:
+    """A hedge still ON at the final bar must have its trailing gain taxed (boundary case).
+
+    The close branch only fires on an ON→OFF transition; a window that ends mid-hedge never hits it,
+    which would otherwise leave the last episode's gain untaxed (an optimistic edge-case bias).
+    """
+    n = 12
+    # Falling index → the SHORT hedge gains; gauge stays high so the episode never closes before end.
+    ret = _series(n, np.full(n, -0.01))
+    gauge = _series(n, np.full(n, 0.9))
+    active = hedge_active(gauge, tau=0.7, persist=3)
+    assert bool(active.iloc[-1])  # the hedge is genuinely still on at the final bar
+
+    taxed = apply_futures_hedge(ret, ret, active, h=0.5, apply_costs=True)
+    untaxed = apply_futures_hedge(ret, ret, active, h=0.5, apply_costs=False)
+    assert taxed.tax > 0.0  # the trailing open episode's gain was taxed
+    assert taxed.equity.iloc[-1] < untaxed.equity.iloc[-1]  # tax reduced terminal wealth
 
 
 def test_cost_overrides_scale_frictions() -> None:

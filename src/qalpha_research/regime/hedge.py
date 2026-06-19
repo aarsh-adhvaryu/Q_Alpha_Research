@@ -113,6 +113,14 @@ def apply_futures_hedge(
         prev = on
         equity.append(pv)
 
+    # An episode still ON at the final bar never reached the close branch above — tax its gain too,
+    # else a run that ends mid-hedge silently over-states the hedged return (untaxed trailing gain).
+    if prev and apply_costs and episode_pnl > 0.0:
+        tax = fno_tax * episode_pnl
+        pv -= tax
+        total_tax += tax
+        equity[-1] = pv
+
     return HedgeResult(
         equity=pd.Series(equity, index=idx, name="hedged"),
         cost=total_cost,
