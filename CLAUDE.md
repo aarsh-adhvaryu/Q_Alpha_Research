@@ -2,6 +2,36 @@
 
 Guidance for Claude Code working in the **research / frontier** repo.
 
+## 🧭 CURRENT STATE — read this first (2026-06-19)
+
+**For the full, interviewer-level overview read [README.md](README.md) — it now carries the whole
+research arc (plain-language + the math + an explicit "biases & decisions" section).** This CLAUDE.md is
+the detailed *working log* below; the README is the front door.
+
+**The arc, one line:** *predict crashes (LPPLS — **negative**) → sell in a downturn (HMM overlay —
+**negative**, the tax kills it) → **hedge** instead (tax-free short-futures overlay — **positive**, cuts
+COVID drawdown −25%→−10% with no return given up).* The lesson mirrors the product: **the tax is always
+the killer; hedge, don't sell.** Quantum portfolio selection (QUBO/QAOA) is an **honest near-miss**
+(risk-competitive but tax-throttled; a hard 2¹⁰⁰ scaling wall → showcase, not production).
+
+**Where we are:** the tax-free hedge is the track's one positive (clears its pre-registered bar on the
+index OOS *and* on the qalpha book, survives a robustness battery at τ≥0.7). It is now **running forward
+as a live paper overlay** (`regime/hedge_paper.py` + daily cron + own Streamlit dashboard, **no real
+derivatives traded**) to see if it holds up live — its GO legitimately waits on a real stress event.
+**Repo green** (28 tests; ruff/format/mypy/pytest pass; QAOA runs under `--extra quantum`).
+
+**Iron rule (load-bearing here):** every claim beats 1/N **walk-forward, net of cost+tax, on the
+survivorship-free universe, with the bar pre-registered before the run** — and **negatives are
+published**, not buried. This repo **imports the validated `qalpha` engine** so every number runs
+through the exact code that trades; **the product never imports from here** (integration, if it ever
+happens, is via a committed data file, not a code import).
+
+The dated working log below is the full evidence trail (LPPLS → HMM → P1/P2/P3 hedge → robustness →
+QUBO-on-Nifty-100 → forward paper run) — skim it for *why*; trust this block + the README for *what is
+true now*.
+
+---
+
 ## What this is
 
 The exploratory track split out of the [Q-Alpha product repo](https://github.com/aarsh-adhvaryu/Q_Alpha)
