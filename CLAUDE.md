@@ -37,7 +37,55 @@ src/qalpha_research/
 
 ## ⏯️ STATE / NEXT SESSION
 
-- **quantum:** built (QUBO/QAOA + benchmark report). Stable; no open thread.
+- **▶ HEDGE FORWARD PAPER RUN LIVE (2026-06-19)** (`regime/hedge_paper.py` + `tests/test_hedge_paper.py`,
+  `scripts/hedge_paper.py`, `scripts/hedge_dashboard_app.py`, `.github/workflows/hedge_paper.yml`,
+  `requirements.txt`, `deploy/DEPLOY_STREAMLIT_HEDGE.md`). *Why:* user wants the proven hedge run
+  **forward in real time, in parallel with the product's paper run**, so if it holds up live it can be
+  integrated alongside the product GO ~6 months out — "it's research so it's ok if it takes time, I
+  want this applied eventually." *What:* the SAME validated machinery (`compute_fragility` →
+  `hedge_active` → `apply_futures_hedge`) run forward on a passive Nifty book from a fixed
+  `FORWARD_START=2026-06-19` (τ=0.7, persist 5, h=0.5). **Stateless** — the cross-asset panel IS the
+  state, so each daily cron recompute (refresh panel from yfinance → recompute → commit
+  `data/hedge_paper_track.csv` + `reports/hedge_paper_dashboard.md`) can't drift; the gauge runs over
+  full causal history, the equity curves only over the forward window. **No real derivatives traded**
+  (models F&O cost + 30% tax). Own **Streamlit dashboard** (`dashboard` extra) deploys to Streamlit
+  Cloud like the product (`requirements.txt`, `-e .`). **Honest caveat (load-bearing):** the gauge is
+  *coincident* and crashes are rare → a calm window keeps the hedge OFF and the curves identical; its
+  GO legitimately **waits on a real stress event** (can't be scheduled). Product still never imports
+  from here — integration, when it comes, is via the committed track-record CSV (data, not code).
+- **✅ hedge.py open-episode tax bug FIXED (2026-06-19)** (`regime/hedge.py`, `tests/test_hedge.py`).
+  *What:* `apply_futures_hedge` taxed an episode's F&O gain only on its ON→OFF *close*; a window that
+  ended **mid-hedge** never hit that branch, so the last open episode's gain went untaxed → an
+  optimistic edge-case bias. *Why it was harmless to the record:* every published window ends calm
+  (hedge off), and the crash decomposition (`exp_hedge_crashes.py`) slices **one** post-tax
+  full-window run (each crash episode closes on recovery, well before the end), so **no published
+  number was affected** — it was a latent oversight, not an active error. *Fix:* after the loop, tax a
+  still-open episode's gain too (3 lines) + a test (`test_open_episode_at_window_end_is_taxed`) that a
+  window ending mid-hedge is taxed; the no-look-ahead test now compares `iloc[:cut-1]` vs `iloc[:-1]`
+  because the truncated run's *final* bar legitimately carries the terminal-episode settlement. *Found
+  by:* a product-side audit; the qalpha hedge was also promoted to a **read-only product dashboard tab**
+  (product-side signal, no import from here — see the product repo's CLAUDE.md, 2026-06-19 sprint).
+- **quantum:** built (QUBO/QAOA + synthetic benchmark report). Stable.
+- **▶ QUBO/quantum on Nifty 100 (2026-06-18) — DONE, honest near-miss.** After the classical
+  3-factor+shrink showed no breadth bonus on Nifty 100 (qalpha), tested whether **combinatorial QUBO
+  selection** does better. Pre-reg `reports/PREREGISTRATION_qubo_universe.md`. **Stage A**
+  (`scripts/exp_qubo_universe.py` → `reports/qubo_universe_findings.md`): annual walk-forward, causal
+  252d μ/Σ → cardinality QUBO (k=20) → **classical SA** (n≈90, the only feasible solver) → equal-weight,
+  executed through qalpha's `Portfolio.rebalance` for **real FIFO cost+tax** (qalpha unmodified; reads
+  the Nifty-100 static universe + price cache from ../qalpha). Result: **23.6% CAGR / Sharpe 1.46 /
+  maxDD −33.3%, ₹273k tax** vs survivorship-inflated **1/N 26.3% / 1.49 / −36.6%** → **−2.7pt CAGR
+  (DOES NOT clear the bar) but essentially ties risk-adjusted** (Sharpe 1.46 vs 1.49, lower DD, ≥1/N in
+  58% of 3y holds, median +1.1pt) — **far closer than the classical screen's −9.9pt / 16%**. The QUBO's
+  variance term genuinely de-risks; the limiter is the **₹273k tax from full annual reselection** (the
+  tax-first thesis again — a found bug: a 0.10 no-trade band > the 5% per-name weight had frozen
+  reselection to ₹0 tax; fixed to band=0). **Survivorship-contaminated baseline → directional, NOT a
+  GO.** **Stage B** (`scripts/exp_qubo_quantum.py` → `reports/qubo_quantum_findings.md`, needs
+  `--extra quantum`): **QAOA reproduced the exact optimum** on a **real** 8-sector Nifty-100 QUBO
+  (−0.5903, 54s) — extends the synthetic benchmark to real data. **Quantum scaling wall (hard):** the
+  full n=100 QUBO is simulator-infeasible (2¹⁰⁰; wall already at n=10), so quantum is showcase-only on a
+  reduced instance; the real selection is solved classically. **Takeaway: QUBO selection is risk-aware
+  and competitive but tax-throttled, doesn't beat the (contaminated) 1/N; a lower-turnover QUBO variant
+  is the pre-registered follow-up. Keep in research.**
 - **regime — LPPLS done, honest NEGATIVE on Nifty** (`reports/lppls_nifty_findings.md`): max
   confidence ~0.33, no useful lead on endogenous peaks; correctly silent (0.00) before the exogenous
   COVID crash + near-zero false positives. Fitter validated (recovers synthetic `tc` to 4dp).
