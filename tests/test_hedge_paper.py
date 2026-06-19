@@ -37,6 +37,7 @@ def test_forward_track_is_restricted_to_the_forward_window() -> None:
     assert abs(float(res.unhedged.iloc[0]) - 1.0) < 0.05
     assert 0.0 <= res.gauge_now <= 1.0
     assert isinstance(res.hedge_on, bool)
+    assert len(res.gauge_history) > 1  # the ~2y gauge context series is populated for the chart
 
 
 def test_never_hedging_equals_unhedged() -> None:
