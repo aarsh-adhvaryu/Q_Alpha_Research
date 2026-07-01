@@ -1,22 +1,22 @@
 # Q-Alpha Research — Tax-Free Hedge (forward paper run)
 
-_Forward paper overlay of the Sprint-2 gauge-triggered short-futures hedge on a passive NIFTY book — **no real derivatives traded**. Validated config: τ=0.7, persist=5, h=0.5. As of **2026-06-30** (started 2026-06-19)._
+_Forward paper overlay of the Sprint-2 gauge-triggered short-futures hedge on a passive NIFTY book — **no real derivatives traded**. Validated config: τ=0.7, persist=5, h=0.5. As of **2026-07-01** (started 2026-06-19)._
 
 ## Gauge & hedge state now
 
 | | |
 |---|---|
-| Systemic-stress gauge | 🟢 **0.52** (calm) |
+| Systemic-stress gauge | 🟢 **0.48** (calm) |
 | Hedge state | **— hedge off** |
-| Forward paper days | 8 |
+| Forward paper days | 9 |
 | Hedge episodes so far | 0 |
 
 ## Forward paper performance (indexed to 1.0 at start)
 
 | Book | Return | Final |
 |---|---|---|
-| Unhedged NIFTY | -1.25% | 0.9875 |
-| Hedged (paper) | -1.25% | 0.9875 |
+| Unhedged NIFTY | -0.67% | 0.9933 |
+| Hedged (paper) | -0.67% | 0.9933 |
 
 Hedge effect to date: **+0.00 pts** (F&O cost 0.00% + tax 0.00% of book, both modelled).
 
