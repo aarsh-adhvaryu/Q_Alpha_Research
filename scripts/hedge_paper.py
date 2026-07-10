@@ -14,6 +14,7 @@ Stateless: the panel is the state (see regime/hedge_paper.py), so a daily recomp
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -21,6 +22,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 import pandas as pd
 from build_fragility_dataset import SERIES, fetch_series
 
+from qalpha_research.notify import Transport, send_telegram
 from qalpha_research.regime.hedge_paper import (
     BACKTEST_CONTEXT,
     HedgePaperResult,
@@ -31,6 +33,67 @@ from qalpha_research.regime.hedge_paper import (
 PANEL_CSV = Path("data/fragility_panel.csv")
 TRACK_CSV = Path("data/hedge_paper_track.csv")
 DASHBOARD_MD = Path("reports/hedge_paper_dashboard.md")
+HEDGE_ALERT_STATE = Path("data/hedge_alert_state.json")
+
+
+def _should_alert(prev: bool | None, curr: bool) -> bool:
+    """Alert only on a genuine hedge-state *transition*; the first-ever observation is a silent
+    baseline (like the product's GO-flip rule) so a fresh checkout doesn't fire a spurious ping."""
+    return prev is not None and prev != curr
+
+
+def hedge_alert_message(*, hedge_on: bool, gauge_now: float, tau: float) -> str:
+    """The Telegram body for a hedge-state flip — informational only, the user decides (never trades)."""
+    if hedge_on:
+        return (
+            f"🛡 <b>Fragility gauge {gauge_now:.2f} ≥ τ {tau:.2g} → hedge overlay ON (paper).</b>\n"
+            "Consider the tax-free short-futures hedge — informational, you decide."
+        )
+    return (
+        f"🛡 <b>Fragility gauge {gauge_now:.2f} &lt; τ {tau:.2g} → hedge overlay OFF (paper).</b>\n"
+        "The systemic-stress signal has eased — informational only."
+    )
+
+
+def _load_hedge_state(path: Path = HEDGE_ALERT_STATE) -> bool | None:
+    if not path.exists():
+        return None
+    try:
+        d = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+    v = d.get("hedge_on")
+    return None if v is None else bool(v)
+
+
+def _save_hedge_state(hedge_on: bool, path: Path = HEDGE_ALERT_STATE) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"hedge_on": hedge_on}) + "\n", encoding="utf-8")
+
+
+def maybe_send_hedge_alert(
+    res: HedgePaperResult,
+    *,
+    state_path: Path = HEDGE_ALERT_STATE,
+    transport: Transport | None = None,
+) -> bool:
+    """On a hedge-state flip (both directions) send one Telegram alert, then persist the new state.
+
+    Fail-soft: ``send_telegram`` never raises, so the cron stays green. Returns whether an alert was
+    actually sent.
+    """
+    prev = _load_hedge_state(state_path)
+    sent = False
+    if _should_alert(prev, res.hedge_on):
+        sent = send_telegram(
+            hedge_alert_message(hedge_on=res.hedge_on, gauge_now=res.gauge_now, tau=res.tau),
+            transport=transport,
+        )
+        print(f"[hedge-alert] transition {prev} → {res.hedge_on}: {'sent' if sent else 'NOT sent'}")
+    else:
+        print(f"[hedge-alert] no transition (state {prev} → {res.hedge_on}) — silent.")
+    _save_hedge_state(res.hedge_on, state_path)
+    return sent
 
 
 def _refresh_panel(start: str = "1996-01-01") -> pd.DataFrame:
@@ -129,7 +192,20 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser(
         "dashboard", help="recompute from the committed panel + write the report (no fetch)"
     )
+    sub.add_parser("test-alert", help="send a test Telegram alert and exit")
+    p_fail = sub.add_parser("pipeline-failed", help="send a pipeline-failure alert (failure step)")
+    p_fail.add_argument("message", help="failure detail (e.g. the run URL)")
     args = parser.parse_args(argv)
+
+    # These two never touch the panel (the failure step may run in a broken environment).
+    if args.cmd == "test-alert":
+        ok = send_telegram("🛡 <b>Q-Alpha Research test alert</b> — hedge-flip alerts are wired.")
+        print(f"[hedge-alert] test: {'sent' if ok else 'NOT sent'}")
+        return 0
+    if args.cmd == "pipeline-failed":
+        ok = send_telegram(f"🚨 <b>Hedge paper pipeline failed</b>\n{args.message}")
+        print(f"[hedge-alert] pipeline-failed: {'sent' if ok else 'NOT sent'}")
+        return 0
 
     panel = _refresh_panel() if args.cmd == "daily" else _load_panel()
     res = forward_hedge_track(panel)
@@ -143,6 +219,9 @@ def main(argv: list[str] | None = None) -> int:
     DASHBOARD_MD.parent.mkdir(parents=True, exist_ok=True)
     DASHBOARD_MD.write_text(_render_markdown(res))
     print(f"✓ Track → {TRACK_CSV} · dashboard → {DASHBOARD_MD} (as of {res.as_of})")
+    # The cron path emits a Telegram alert on a hedge-state flip (both directions), then persists it.
+    if args.cmd == "daily":
+        maybe_send_hedge_alert(res)
     return 0
 
 
