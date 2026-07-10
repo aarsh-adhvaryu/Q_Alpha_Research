@@ -33,6 +33,15 @@ def test_format_keeps_existing_preamble_once() -> None:
     assert out.count(CONTEXT_PREAMBLE) == 1
 
 
+def test_format_strips_pre_preamble_narration() -> None:
+    # The web-search model sometimes narrates before the template — anchor drops it.
+    text = f"I'll search for today's news.Let me dig deeper.{CONTEXT_PREAMBLE}\n\nSentiment 🟢."
+    out = format_for_telegram(text)
+    assert out.startswith(CONTEXT_PREAMBLE)
+    assert "I'll search" not in out
+    assert out.count(CONTEXT_PREAMBLE) == 1
+
+
 def test_format_truncates_over_limit_on_word_boundary() -> None:
     long = CONTEXT_PREAMBLE + "\n\n" + ("word " * 2000)
     out = format_for_telegram(long, limit=200)
@@ -48,7 +57,7 @@ def test_generate_brief_with_canned_client() -> None:
     res = generate_brief(["RELIANCE:ENERGY"], generate=fake, model="claude-haiku-4-5")
     assert res is not None
     assert res.text.startswith(CONTEXT_PREAMBLE)  # preamble guaranteed even if the model omits it
-    assert res.raw == "Sentiment 🟢 — steady."
+    assert res.raw.startswith(CONTEXT_PREAMBLE) and "Sentiment 🟢 — steady." in res.raw
     assert res.usage["input"] == 700
     assert res.model == "claude-haiku-4-5"
 

@@ -80,15 +80,26 @@ def build_prompt(watchlist_lines: list[str]) -> str:
     )
 
 
-def format_for_telegram(text: str, *, limit: int = _TELEGRAM_LIMIT) -> str:
-    """Guarantee the context-only preamble and fit within Telegram's length cap.
+def anchor_preamble(text: str) -> str:
+    """Make the context-only preamble the first line, stripping any pre-amble model narration.
 
-    If the model dropped the preamble, prepend it (the disclaimer is non-negotiable). Then truncate
-    on a whitespace boundary with an ellipsis if over ``limit``.
+    The web-search model sometimes emits "I'll search for…" chatter before the template. Anchor on
+    the preamble: drop everything before it if it appears mid-text, or prepend it if it's missing
+    entirely (the disclaimer is non-negotiable).
     """
     body = text.strip()
-    if CONTEXT_PREAMBLE not in body.splitlines()[0:1] and not body.startswith(CONTEXT_PREAMBLE):
-        body = f"{CONTEXT_PREAMBLE}\n\n{body}"
+    idx = body.find(CONTEXT_PREAMBLE)
+    if idx > 0:
+        return body[idx:].strip()
+    if idx < 0:
+        return f"{CONTEXT_PREAMBLE}\n\n{body}"
+    return body
+
+
+def format_for_telegram(text: str, *, limit: int = _TELEGRAM_LIMIT) -> str:
+    """Anchor the preamble (see :func:`anchor_preamble`) and fit within Telegram's length cap —
+    truncating on a whitespace boundary with an ellipsis if over ``limit``."""
+    body = anchor_preamble(text)
     if len(body) <= limit:
         return body
     cut = body.rfind(" ", 0, limit - 1)
@@ -172,4 +183,6 @@ def generate_brief(
     if not raw.strip():
         print("[ai-brief] empty response — skipping.")
         return None
-    return BriefResult(text=format_for_telegram(raw), raw=raw.strip(), model=model, usage=usage)
+    return BriefResult(
+        text=format_for_telegram(raw), raw=anchor_preamble(raw), model=model, usage=usage
+    )
