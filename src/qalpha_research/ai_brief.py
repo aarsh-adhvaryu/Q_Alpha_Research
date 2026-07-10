@@ -8,13 +8,18 @@ validation). Any discretionary idea it surfaces is explicitly for the existing *
 "context only, not a signal" line so it can never be mistaken for the validated system's output. It
 lives in the *research* repo precisely so the product stays deterministic and LLM-free.
 
-**Model:** Google Gemini (free tier) with built-in **Google Search grounding**, so the brief reflects
-*today's* news without any RSS plumbing. The single networked call is isolated behind an injectable
-:data:`GenerateFn` seam; everything else here (:func:`build_prompt`, :func:`format_for_telegram`,
-parsing) is pure and unit-tested with no network and no SDK installed.
+**Model:** Anthropic **Claude Haiku 4.5** with the server-side **web-search tool**, so the brief
+reflects *today's* news without any RSS plumbing (Haiku was chosen over Opus deliberately — the brief
+is context-only, so provider capability has nowhere to propagate; a templated news digest doesn't need
+Opus-tier reasoning). Haiku is an older-tier model, so it uses the basic ``web_search_20250305`` tool
+variant; thinking/effort don't apply to Haiku and a news summary needs neither, so both are omitted.
+The single networked call is isolated behind an injectable :data:`GenerateFn` seam; everything else
+here (:func:`build_prompt`, :func:`format_for_telegram`, parsing) is pure and unit-tested with no
+network and no SDK installed.
 
-**Fail-soft everywhere:** a missing ``GEMINI_API_KEY``, an API/quota error, or an empty response →
-skip (return ``None``) with a log line. The cron must never go red because the brief hiccuped.
+**Fail-soft everywhere:** a missing ``ANTHROPIC_API_KEY``, an API/quota/refusal error, or an empty
+response → skip (return ``None``) with a log line. The cron must never go red because the brief
+hiccuped.
 """
 
 from __future__ import annotations
@@ -25,13 +30,21 @@ from dataclasses import dataclass, field
 
 # The opening line every brief must carry — the whole point is that this can never read as a signal.
 CONTEXT_PREAMBLE = "🧠 AI market brief — context only, not a signal."
-_DEFAULT_MODEL = "gemini-3.5-flash"  # current free-tier flash (2026); override via GEMINI_MODEL
+_DEFAULT_MODEL = "claude-haiku-4-5"  # cheap, right-sized; override via ANTHROPIC_MODEL
 _MAX_OUTPUT_TOKENS = 1500  # a hard ceiling on output cost (the brief is ~500 tokens)
-_MAX_SEARCHES = 4  # grounding: "why Nifty moved today" + 1–3 driver follow-ups
+_MAX_SEARCHES = 4  # web search: "why Nifty moved today" + 1–3 driver follow-ups
 _TELEGRAM_LIMIT = 3900  # Telegram hard-caps a message at 4096 chars; leave headroom
+# Reputable Indian-market sources; scoping the search keeps it fast, cheap, and on-topic.
+_ALLOWED_DOMAINS = [
+    "economictimes.indiatimes.com",
+    "moneycontrol.com",
+    "reuters.com",
+    "livemint.com",
+    "business-standard.com",
+]
 
 # A GenerateFn takes (model, prompt) → (text, usage). Injectable so tests supply a canned response
-# with no network and no google-genai installed; the default wires the grounded Gemini call.
+# with no network and no anthropic SDK installed; the default wires the web-searched Haiku call.
 GenerateFn = Callable[[str, str], tuple[str, dict[str, int]]]
 
 
@@ -53,8 +66,9 @@ def build_prompt(watchlist_lines: list[str]) -> str:
     """
     watchlist = ", ".join(watchlist_lines)
     return (
-        "You are a market-context assistant for an Indian-equity (NSE) investor. Use Google Search "
-        "to read today's Indian market news, then write a SHORT brief. No preamble, template only.\n\n"
+        "You are a market-context assistant for an Indian-equity (NSE) investor. Use the web-search "
+        "tool to read today's Indian market news, then write a SHORT brief. No preamble, template "
+        "only.\n\n"
         f"Open with exactly this line: {CONTEXT_PREAMBLE}\n\n"
         "Then, in ≤1800 characters of Telegram-friendly markdown:\n"
         "1. **Sentiment**: 🟢/🟠/🔴 + one sentence on the day.\n"
@@ -102,33 +116,34 @@ def load_watchlist_lines(csv_path: str) -> list[str]:
     return lines
 
 
-def _default_generate(api_key: str, model: str) -> GenerateFn:
-    """Wire the real grounded Gemini call. Lazy-imports google-genai so the module (and the pure
-    tests) load without the ``ai`` extra installed."""
+def _default_generate(api_key: str) -> GenerateFn:
+    """Wire the real web-searched Haiku call. Lazy-imports the anthropic SDK so the module (and the
+    pure tests) load without the ``ai`` extra installed."""
 
     def generate(model_id: str, prompt: str) -> tuple[str, dict[str, int]]:
-        from google import genai
-        from google.genai import types
+        import anthropic
 
-        client = genai.Client(api_key=api_key)
-        resp = client.models.generate_content(
+        client = anthropic.Anthropic(api_key=api_key)
+        resp = client.messages.create(
             model=model_id,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                tools=[types.Tool(google_search=types.GoogleSearch())],
-                max_output_tokens=_MAX_OUTPUT_TOKENS,
-                temperature=0.4,
-            ),
+            max_tokens=_MAX_OUTPUT_TOKENS,
+            tools=[
+                {
+                    "type": "web_search_20250305",
+                    "name": "web_search",
+                    "max_uses": _MAX_SEARCHES,
+                    "allowed_domains": _ALLOWED_DOMAINS,
+                }
+            ],
+            messages=[{"role": "user", "content": prompt}],
         )
-        text = resp.text or ""
-        usage: dict[str, int] = {}
-        meta = getattr(resp, "usage_metadata", None)
-        if meta is not None:
-            usage = {
-                "input": int(getattr(meta, "prompt_token_count", 0) or 0),
-                "output": int(getattr(meta, "candidates_token_count", 0) or 0),
-                "total": int(getattr(meta, "total_token_count", 0) or 0),
-            }
+        if resp.stop_reason == "refusal":  # safety decline → treat as empty (fail-soft skips it)
+            return "", {}
+        text = "".join(b.text for b in resp.content if getattr(b, "type", None) == "text")
+        usage = {
+            "input": int(getattr(resp.usage, "input_tokens", 0) or 0),
+            "output": int(getattr(resp.usage, "output_tokens", 0) or 0),
+        }
         return text, usage
 
     return generate
@@ -142,16 +157,16 @@ def generate_brief(
 ) -> BriefResult | None:
     """Produce today's brief, or ``None`` if it can't (fail-soft — the caller stays green).
 
-    ``generate`` is injected in tests (a canned response). In production it defaults to the grounded
-    Gemini call, which needs ``GEMINI_API_KEY`` — absent it, this returns ``None`` (skip).
+    ``generate`` is injected in tests (a canned response). In production it defaults to the
+    web-searched Haiku call, which needs ``ANTHROPIC_API_KEY`` — absent it, this returns ``None``.
     """
-    model = model or os.environ.get("GEMINI_MODEL") or _DEFAULT_MODEL
+    model = model or os.environ.get("ANTHROPIC_MODEL") or _DEFAULT_MODEL
     if generate is None:
-        api_key = os.environ.get("GEMINI_API_KEY")
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
         if not api_key:
-            print("[ai-brief] GEMINI_API_KEY not set — skipping the brief.")
+            print("[ai-brief] ANTHROPIC_API_KEY not set — skipping the brief.")
             return None
-        generate = _default_generate(api_key, model)
+        generate = _default_generate(api_key)
     try:
         raw, usage = generate(model, build_prompt(watchlist_lines))
     except Exception as exc:  # fail-soft: never break the cron on an API/quota/parse error

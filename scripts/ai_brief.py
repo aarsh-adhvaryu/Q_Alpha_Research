@@ -1,7 +1,7 @@
 """Daily AI market brief CLI — the "macro analyst" that rides the hedge cron (Ops Layer PR-4).
 
-**Context only, never a signal** (see :mod:`qalpha_research.ai_brief`). One grounded Gemini call per
-trading day → archive to ``reports/ai_brief.md`` (committed) → push to Telegram via the PR-3 sender.
+**Context only, never a signal** (see :mod:`qalpha_research.ai_brief`). One web-searched Claude Haiku
+call per trading day → archive to ``reports/ai_brief.md`` (committed) → push to Telegram via PR-3.
 
     ai_brief.py daily              # generate → write reports/ai_brief.md → send to Telegram
     ai_brief.py daily --dry-run    # generate + print only (no send, no file write)

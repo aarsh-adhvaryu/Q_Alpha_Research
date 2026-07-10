@@ -30,10 +30,10 @@ dashboard = [
     "yfinance>=0.2",
 ]
 # Daily AI market brief (scripts/ai_brief.py) — an LLM *narrative* layer, context-only/never a signal.
-# Google Gemini free tier + built-in Google Search grounding. Lazy-imported, so the pure helpers +
+# Anthropic Claude Haiku 4.5 + the server-side web-search tool. Lazy-imported, so the pure helpers +
 # their tests need neither the dep nor a network. Install with `uv sync --extra ai`.
 ai = [
-    "google-genai>=1.0",
+    "anthropic>=0.40",
 ]
 # Quantum track (Q_alpha.md §15): heavy + AUM-gated. Install with `uv sync --extra quantum`.
 # The QAOA tests skip without it; the QUBO/exact/SA tests run on numpy alone.

@@ -43,14 +43,14 @@ def test_format_truncates_over_limit_on_word_boundary() -> None:
 def test_generate_brief_with_canned_client() -> None:
     def fake(model: str, prompt: str) -> tuple[str, dict[str, int]]:
         assert "RELIANCE:ENERGY" in prompt
-        return "Sentiment 🟢 — steady.", {"input": 700, "output": 120, "total": 820}
+        return "Sentiment 🟢 — steady.", {"input": 700, "output": 120}
 
-    res = generate_brief(["RELIANCE:ENERGY"], generate=fake, model="gemini-2.5-flash")
+    res = generate_brief(["RELIANCE:ENERGY"], generate=fake, model="claude-haiku-4-5")
     assert res is not None
     assert res.text.startswith(CONTEXT_PREAMBLE)  # preamble guaranteed even if the model omits it
     assert res.raw == "Sentiment 🟢 — steady."
     assert res.usage["input"] == 700
-    assert res.model == "gemini-2.5-flash"
+    assert res.model == "claude-haiku-4-5"
 
 
 def test_generate_brief_empty_response_is_skipped() -> None:
@@ -66,7 +66,7 @@ def test_generate_brief_api_error_is_fail_soft() -> None:
 
 
 def test_generate_brief_missing_key_skips(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     # No injected generate + no key → skip (None), never attempts a network call.
     assert generate_brief(["X:Y"]) is None
 
