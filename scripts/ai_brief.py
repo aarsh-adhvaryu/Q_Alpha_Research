@@ -47,17 +47,29 @@ def main(argv: list[str] | None = None) -> int:
     if result is None:
         return 0  # already logged the reason
 
-    print(f"[ai-brief] usage: {result.usage or 'n/a'} · model {result.model}")
+    footer = _usage_footer(result)
+    print(f"[ai-brief]{footer.strip().lstrip('—').strip()}")
     if args.dry_run:
         print("\n--- brief (dry run, not sent) ---\n")
-        print(result.text)
+        print(result.text + footer)
         return 0
 
     BRIEF_MD.parent.mkdir(parents=True, exist_ok=True)
-    BRIEF_MD.write_text(result.raw + "\n", encoding="utf-8")
-    ok = send_telegram(result.text)
+    BRIEF_MD.write_text(result.raw + footer + "\n", encoding="utf-8")
+    ok = send_telegram(result.text + footer)
     print(f"[ai-brief] archived → {BRIEF_MD} · telegram: {'sent' if ok else 'NOT sent'}")
     return 0
+
+
+def _usage_footer(result: object) -> str:
+    """A compact token-usage line appended to the brief — so cost/completeness is visible on the
+    phone and in the committed archive, without checking the Anthropic console."""
+    usage = getattr(result, "usage", {}) or {}
+    inp = usage.get("input", 0)
+    out = usage.get("output", 0)
+    model = getattr(result, "model", "?")
+    note = " ⚠️ cut off (raise max_tokens)" if usage.get("truncated") else " ✓ complete"
+    return f"\n\n— 🤖 {model} · {inp:,} in / {out:,} out tokens ·{note}"
 
 
 if __name__ == "__main__":

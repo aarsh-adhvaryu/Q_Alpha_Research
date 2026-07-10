@@ -143,6 +143,9 @@ def _default_generate(api_key: str) -> GenerateFn:
         usage = {
             "input": int(getattr(resp.usage, "input_tokens", 0) or 0),
             "output": int(getattr(resp.usage, "output_tokens", 0) or 0),
+            # 1 iff the model hit the output cap (brief was cut off) — surfaced in the footer so the
+            # user can see the response was complete without opening the Anthropic console.
+            "truncated": 1 if resp.stop_reason == "max_tokens" else 0,
         }
         return text, usage
 
