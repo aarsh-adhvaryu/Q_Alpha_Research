@@ -34,14 +34,9 @@ _DEFAULT_MODEL = "claude-haiku-4-5"  # cheap, right-sized; override via ANTHROPI
 _MAX_OUTPUT_TOKENS = 1500  # a hard ceiling on output cost (the brief is ~500 tokens)
 _MAX_SEARCHES = 4  # web search: "why Nifty moved today" + 1–3 driver follow-ups
 _TELEGRAM_LIMIT = 3900  # Telegram hard-caps a message at 4096 chars; leave headroom
-# Reputable Indian-market sources; scoping the search keeps it fast, cheap, and on-topic.
-_ALLOWED_DOMAINS = [
-    "economictimes.indiatimes.com",
-    "moneycontrol.com",
-    "reuters.com",
-    "livemint.com",
-    "business-standard.com",
-]
+# NB: we deliberately do NOT set allowed_domains — most Indian-market news sites
+# (economictimes/moneycontrol/livemint/reuters) block Anthropic's search crawler, so restricting to
+# them 400s. The prompt steers the model to Indian-market news; open search finds crawlable sources.
 
 # A GenerateFn takes (model, prompt) → (text, usage). Injectable so tests supply a canned response
 # with no network and no anthropic SDK installed; the default wires the web-searched Haiku call.
@@ -132,7 +127,6 @@ def _default_generate(api_key: str) -> GenerateFn:
                     "type": "web_search_20250305",
                     "name": "web_search",
                     "max_uses": _MAX_SEARCHES,
-                    "allowed_domains": _ALLOWED_DOMAINS,
                 }
             ],
             messages=[{"role": "user", "content": prompt}],
