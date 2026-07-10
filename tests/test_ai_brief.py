@@ -22,6 +22,13 @@ def test_build_prompt_includes_watchlist_and_context_preamble() -> None:
     assert "satellite sleeve" in prompt.lower()  # discretionary ideas are sleeve-framed
 
 
+def test_build_prompt_asks_for_likely_reaction_framed_as_non_signal() -> None:
+    prompt = build_prompt(["RELIANCE:ENERGY"])
+    assert "likely reaction" in prompt.lower()
+    assert "not a validated signal" in prompt.lower()  # forward read stays honestly framed
+    assert "confidence" in prompt.lower()  # the light quantitative element
+
+
 def test_format_prepends_preamble_when_missing() -> None:
     out = format_for_telegram("Markets rose today on strong earnings.")
     assert out.startswith(CONTEXT_PREAMBLE)

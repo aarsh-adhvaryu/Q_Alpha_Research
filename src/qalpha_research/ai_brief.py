@@ -3,10 +3,13 @@
 **Honest framing (load-bearing, do not weaken):** this is a language-model *narrative* — market
 context for a human to read, nothing more. It never computes a number, never feeds the deterministic
 advisor/engine, and never changes an allocation (the repo's iron rule: no new alpha without
-validation). Any discretionary idea it surfaces is explicitly for the existing **satellite sleeve**
-(the container built for human judgment calls, ≤8% sleeve / ≤2.5% per name). Every brief opens with a
-"context only, not a signal" line so it can never be mistaken for the validated system's output. It
-lives in the *research* repo precisely so the product stays deterministic and LLM-free.
+validation). Any discretionary idea it surfaces — **including the "likely reaction" read** (a
+qualitative near-term directional lean the model reasons out from the day's drivers) — is explicitly
+the model's *non-validated opinion* for the existing **satellite sleeve** (the container built for
+human judgment calls, ≤8% sleeve / ≤2.5% per name), never a forecast the system trusts or acts on.
+Every brief opens with a "context only, not a signal" line so it can never be mistaken for the
+validated system's output. It lives in the *research* repo precisely so the product stays
+deterministic and LLM-free.
 
 **Model:** Anthropic **Claude Haiku 4.5** with the server-side **web-search tool**, so the brief
 reflects *today's* news without any RSS plumbing (Haiku was chosen over Opus deliberately — the brief
@@ -65,15 +68,21 @@ def build_prompt(watchlist_lines: list[str]) -> str:
         "tool to read today's Indian market news, then write a SHORT brief. No preamble, template "
         "only.\n\n"
         f"Open with exactly this line: {CONTEXT_PREAMBLE}\n\n"
-        "Then, in ≤1800 characters of Telegram-friendly markdown:\n"
+        "Then, in ≤1900 characters of Telegram-friendly markdown:\n"
         "1. **Sentiment**: 🟢/🟠/🔴 + one sentence on the day.\n"
         "2. **Drivers**: the top 2–3, each with the *why* (e.g. 'crude +4% on X → OMC margins "
         "compress, aviation/paint input costs rise').\n"
         "3. **Watchlist names affected**: from the list below, name the few most touched by the "
         "drivers.\n"
-        "4. **Discretionary ideas** (0–2, optional): tag each 'satellite sleeve rules apply'. Omit if "
+        "4. **Likely reaction** (YOUR READ, not a validated signal — qualitative reasoning, not a "
+        "backtest): near-term directional lean for the index over the next 1–2 sessions "
+        "(up / flat / down) with a rough magnitude band (e.g. '+0.3–0.8%') and a confidence word "
+        "(low / medium / high); then the 1–2 watchlist names most likely to move and which way. Base "
+        "it on how the drivers above historically tend to play out — but keep it explicitly your "
+        "judgement for a human's satellite sleeve, never a recommendation the system will act on.\n"
+        "5. **Discretionary ideas** (0–2, optional): tag each 'satellite sleeve rules apply'. Omit if "
         "nothing stands out.\n"
-        "5. **Risk note**: one line.\n\n"
+        "6. **Risk note**: one line.\n\n"
         "This is CONTEXT for a human, NOT a trade signal; never imply certainty or a recommendation "
         "the system will act on.\n\n"
         f"Watchlist (TICKER:SECTOR): {watchlist}"
