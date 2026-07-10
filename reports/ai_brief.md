@@ -1,16 +1,19 @@
-I'll search for today's Indian market news to provide you with a market brief.Let me search for more specific drivers and sector-level details.🧠 AI market brief — context only, not a signal.
+🧠 AI market brief — context only, not a signal.
 
-**Sentiment**: 🟢 Sensex rose 828 points or 1.08% to 77,569.39; Nifty50 settled 244.10 points or 1.02% higher at 24,206.90.
+**Sentiment:** 🟢 Sensex rose 828 points (1.08%) to 77,569; Nifty50 +244 pts (1.02%) to 24,207, led by PSU banks and realty shares.
 
-**Drivers**:
-1. **IT rebound post-TCS Q1**: Nifty IT index added 1.96% as Tech Mahindra was the top performer among the Nifty pack, rising 2.19%, boosted by earnings hopes and sharp rise in global equities due to rebound in chip stocks.
-2. **PSU banks/realty surge on earnings**: Nifty PSU Bank and Nifty Realty gained more than 3% each, as Indian Bank and Bank of Maharashtra's Q1 results provided significant support.
-3. **Crude volatility persists but eases**: Crude oil slipped below $73/barrel Thursday, snapping a two-day rally despite US-Iran tensions — input cost pressure on energy/aviation names lingers but sentiment stabilizing.
+**Drivers:**
+1. **Global tech rebound & FII optimism** — Sharp rise in global equities due to rebound in chip stocks + easing oil prices and recovery in tech sector improved FII sentiment. Jio Financial, HDFC Life, SBI Life were top Nifty gainers.
+2. **Oil volatility holding ~$72–73/bbl** — Crude fell below $72 after surging 4.4% prior session on US-Iran tension reassessment. OMC margins remain under pressure; aviation/paint input costs stay elevated.
 
-**Watchlist names affected**:
-- **Gainers**: JIOFIN, HDFCLIFE, SBILIFE were top Nifty50 gainers; BANKBARODA, CANBK (PSU banks); LODHA, DLF (realty).
-- **Pressure**: DRREDDY, ETERNAL, BHARTIARTL, NESTLEIND, SUNPHARMA were top losers on profit-taking.
+**Watchlist names affected:**
+- **Financials shine:** JIOFIN, HDFCLIFE, SBILIFE, AXISBANK, ICICIBANK (realty/bank recovery).
+- **Energy mixed:** BPCL, IOC, ONGC (margin squeeze from crude volatility).
+- **Autos, consumer steady:** MARUTI, ASIANPAINT (paint cost headwinds continue).
 
-**Risk note**: Renewed US-Iran escalation has placed Strait of Hormuz back at center of energy market concerns, with potential to disrupt oil supplies and heighten volatility—watch Middle East headlines for crude re-spike.
+**Discretionary ideas:**  
+None highlighted; consolidation mode with narrow range trading expected.
 
-— 🤖 claude-haiku-4-5 · 47,486 in / 848 out tokens · ✓ complete
+**Risk note:** Trump declared ceasefire over; further Iran strikes/blockade threats could reignite oil volatility and geopolitical jitters anytime.
+
+— 🤖 claude-haiku-4-5 · 42,108 in / 689 out tokens · ✓ complete
