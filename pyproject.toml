@@ -29,6 +29,12 @@ dashboard = [
     "streamlit>=1.37",
     "yfinance>=0.2",
 ]
+# Daily AI market brief (scripts/ai_brief.py) — an LLM *narrative* layer, context-only/never a signal.
+# Google Gemini free tier + built-in Google Search grounding. Lazy-imported, so the pure helpers +
+# their tests need neither the dep nor a network. Install with `uv sync --extra ai`.
+ai = [
+    "google-genai>=1.0",
+]
 # Quantum track (Q_alpha.md §15): heavy + AUM-gated. Install with `uv sync --extra quantum`.
 # The QAOA tests skip without it; the QUBO/exact/SA tests run on numpy alone.
 quantum = [
