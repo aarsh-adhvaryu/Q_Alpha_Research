@@ -25,7 +25,7 @@ from dataclasses import dataclass, field
 
 # The opening line every brief must carry — the whole point is that this can never read as a signal.
 CONTEXT_PREAMBLE = "🧠 AI market brief — context only, not a signal."
-_DEFAULT_MODEL = "gemini-2.5-flash"  # free-tier flash; override via GEMINI_MODEL
+_DEFAULT_MODEL = "gemini-3.5-flash"  # current free-tier flash (2026); override via GEMINI_MODEL
 _MAX_OUTPUT_TOKENS = 1500  # a hard ceiling on output cost (the brief is ~500 tokens)
 _MAX_SEARCHES = 4  # grounding: "why Nifty moved today" + 1–3 driver follow-ups
 _TELEGRAM_LIMIT = 3900  # Telegram hard-caps a message at 4096 chars; leave headroom
