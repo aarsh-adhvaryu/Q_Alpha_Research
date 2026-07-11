@@ -45,8 +45,11 @@ from qalpha_research.forward_study import (
 )
 
 FORWARD_START = (
-    "2026-07-14"  # fixed study start (first trading session on/after this seeds the books)
+    "2026-07-06"  # fixed study start (first trading session on/after this seeds the books)
 )
+# Fetch a long price history (NOT from FORWARD_START) so the deploy engine has the ~1-year lookback it
+# needs for market-weakness + per-name cheapness; only the *books* start accruing at FORWARD_START.
+PRICE_HISTORY_START = "2024-06-01"
 RESOLVE_CALENDAR_DAYS = 28  # ≈20 trading days — the window each decision is scored over vs Nifty
 
 WATCHLIST_CSV = Path("data/nifty100_watchlist.csv")
@@ -329,7 +332,7 @@ def _as_of_today(nifbees: pd.Series) -> str:
 
 def cmd_daily() -> int:
     watchlist, sector_of = _load_watchlist()
-    prices, nifbees = _fetch_panel(watchlist, start=FORWARD_START)
+    prices, nifbees = _fetch_panel(watchlist, start=PRICE_HISTORY_START)
     if nifbees.empty:
         print("[forward-study] no NIFTYBEES prices yet — nothing to mark.")
         return 0
