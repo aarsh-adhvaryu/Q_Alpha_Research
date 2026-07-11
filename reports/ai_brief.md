@@ -1,17 +1,25 @@
 🧠 AI market brief — context only, not a signal.
 
-**Sentiment:** 🟢 Sensex rose 828 points or 1.08 per cent to 77,569.39, and Nifty50 settled 244.10 points or 1.02 per cent higher at 24,206.90 on broad-based strength.
+**Sentiment**: 🟢 India's BSE Sensex closed about 1.1% firmer at 77,569.4 on Friday, extending prior session's gains, led by tech stocks, while easing oil prices provided further support.
 
-**Drivers:**
-1. **Chip stock rebound & IT recovery** — A sharp rise in global equities due to a rebound in chip stocks supported the domestic indices; IT heavyweight TCS earnings season began; watchlist IT names (INFY, TCS, HCLTECH, WIPRO, TECHM) benefited.
-2. **PSU bank & realty rally** — Jio Financial Services, HDFC Life Insurance Company, and SBI Life Insurance Company were the top gainers in the Nifty50 index; broader sentiment lifted BANKBARODA, SBIN, CANBK, DLF, LODHA.
+**Drivers**:
+1. **IT strength & AI narrative** – TCS reported a $9.5 billion order book and $2.6 billion in annualized AI revenue, with Tech Mahindra and HCL Tech also advancing. This lifts INFY, TCS, TECHM, HCLTECH despite modest macro headwinds.
+2. **Crude stability & geopolitical offset** – Crude oil price stands at $76.08 per barrel, an increase from yesterday's $74.12. Investors welcomed reports that the US and Iran will continue their technical talks despite recent clashes. Lower volatility near $71–76/bbl eases OMC margin compression; lighter tailwind vs. downside risk.
+3. **FII cautious return** – Foreign Institutional Investors are putting money into Indian stocks again, with inflows linked to optimism around artificial intelligence and geopolitics.
 
-**Watchlist names affected:** INFY, TCS, WIPRO (IT rally), JIOFIN, SBILIFE, HDFCLIFE (financials/insurance), LODHA, DLF (realty).
+**Watchlist names affected**:  
+TCS, INFY, TECHM, HCLTECH (IT rally). RELIANCE, BPCL, IOC (crude-linked). AXISBANK, KOTAKBANK (fund flows, earnings support).
 
-**Likely reaction (read, not a signal):** Medium confidence near-term lean **up +0.4–0.9%** over 1–2 sessions, contingent on global tech momentum holding and absence of new Iran–Strait geopolitical escalation (crude currently ~$72–76, lower margin pressure on OMCs—BPCL, IOC). INFY and JIOFIN most likely to extend gains; DLF/LODHA realty names may remain supported if liquidity stays broad.
+**Likely reaction**:  
+Index likely to **drift flat to modestly up (+0.2–0.6%)** over next 1–2 sessions on **medium confidence**. IT momentum continues on earnings optimism; crude plateau and Iran truce-talk optimism remove near-term shock risk. However, market sentiment was tempered by renewed foreign investor outflows last week, so new inflows need sustaining. Most likely movers: **INFY, TCS +0.3–1.0%** on AI narrative; **BPCL flat to –0.2%** if crude steadies (no margin urgency).
 
-**Discretionary ideas:** None standing out; earnings season risk remains (TCS in-focus, HCLTECH preview mode).
+**Discretionary ideas**:  
+None; market context favours defensive hold and IT accumulation on dips—satellite sleeve rules apply.
 
-**Risk note:** Oil prices fell as traders bet the US-Iran conflict would remain limited, easing initial concerns that energy infrastructure would come under attack again—but flare-up risk persists; watch Strait updates for OMC margin reversal.
+**Risk note**: Market participants are now focused on upcoming quarterly earnings from other major companies to gauge the strength of India's earnings season; disappointing Q1 results or fresh Middle East escalation could snap the narrow rally.
 
-— 🤖 claude-haiku-4-5 · 32,590 in / 774 out tokens · ✓ complete
+---
+
+SIGNAL: lean=up; band=0.2..0.6; confidence=medium
+
+— 🤖 claude-haiku-4-5 · 31,417 in / 938 out tokens · ✓ complete
