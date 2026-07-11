@@ -2,7 +2,76 @@
 
 Guidance for Claude Code working in the **research / frontier** repo.
 
-## 🧭 CURRENT STATE — read this first (2026-06-19)
+## 🧭 CURRENT STATE — read this FIRST (2026-07-11)
+
+**Everything below this block is the older working log; this block is what's true now.** The
+**"Daily-Driver Ops Layer"** (plan lives in the product repo's `PLAN_OPS_LAYER.md`) is built and its
+research half is **merged + live**. On top of it we added a plain-English dashboard pass, a
+whole-system integration layer, and started a pre-registered forward study. **Both repos green.**
+
+**MERGED to `main` (live):**
+- **Ops-Layer PR-3 (#5) — hedge-flip Telegram alert.** `src/qalpha_research/notify.py` (deliberate
+  stdlib copy of the product sender; repos stay decoupled), `scripts/hedge_paper.py` gained
+  `_should_alert`/`hedge_alert_message` + JSON state `data/hedge_alert_state.json`; the `daily` cron
+  sends on a hedge ON/OFF flip; `test-alert`/`pipeline-failed` subcommands. `hedge_paper.yml` wired.
+- **Ops-Layer PR-4 (#6) — daily AI market brief.** `src/qalpha_research/ai_brief.py` +
+  `scripts/ai_brief.py` + vendored `data/nifty100_watchlist.csv`; `ai` extra = **anthropic**. **Model =
+  Claude Haiku 4.5** (Opus was overkill for a context-only digest; Gemini free tier was tried first but
+  its Google-Search grounding needs billing → 429). Uses the basic `web_search_20250305` tool (no
+  `allowed_domains` — Indian news sites block Anthropic's crawler → 400; thinking/effort omitted, N/A
+  on Haiku). **Context-only, never a signal**; emits a "Likely reaction" read + a machine-readable
+  `SIGNAL: lean=..; band=..; confidence=..` last line (for the forward study). Token-usage footer on
+  the brief (visible without the console). **Cost reality: web-search results bill as INPUT tokens →
+  ~40k in/brief ≈ ~₹6–8/day.** Rides `hedge_paper.yml` after the hedge mark.
+- **Dashboard clarity + whole-system layer (#7).** `regime/hedge_readout.py` (plain-English
+  summary/gauge-read/glossary) into `hedge_dashboard_app.py` (which now also surfaces the AI brief).
+  **`src/qalpha_research/system_check.py`** = the whole-system integration check (per-subsystem health
+  across BOTH seams: code seam = hedge overlay runs on the validated `qalpha` engine; data seam =
+  product's committed `reports/paper_dashboard.md` fetched over the PUBLIC repo, NOT imported).
+  **`scripts/system_check.py`** CLI (`--offline`; exit 0 iff all critical green) + a daily
+  `continue-on-error` heartbeat step in `hedge_paper.yml`. **`scripts/mission_control_app.py`** = one
+  Streamlit screen: health board + product paper book (fetched) + hedge + AI brief.
+- **Streamlit deploy fix (#8).** `requirements.txt` now pins `qalpha @ git+https://…Q_Alpha.git@main` —
+  Streamlit Cloud installs with **pip**, which ignores `[tool.uv.sources]`, so bare `qalpha` fails
+  ("No matching distribution found"). Verified with a clean pip install. Deploy mission-control as its
+  own Streamlit app (entry `scripts/mission_control_app.py`, branch main); reboot to pick up the fix.
+
+**Secrets on this repo's Actions:** `ANTHROPIC_API_KEY`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` all
+set. `GEMINI_API_KEY` deleted. Telegram bot **@qalphastocks_bot**, chat_id **8936117519**.
+
+**🚧 ACTIVE WIP — pre-registered A/B/C forward study (branch `forward-study`, pushed, NOT merged, no PR
+yet).** Answers the user's ask: *"the model recommends, the AI adds insight, the system invests (fake
+money) — did it work? did I lose money? does the AI help?"* — a **new parameter in the complete-system
+test** while we still wait on GO. **Read `reports/PREREGISTRATION_forward_study.md` first** (the
+contract). Design: three fake-money books with identical (fake) cash injections — **A** strategy only ·
+**B** strategy + AI nudge · **C** buy-and-hold NIFTYBEES. The **wallet = idle fake cash**; the user
+tops it up; the engine deploys a **tranche** into the most out-of-favour *individual* names —
+**always opportunistic (0.25 base even in a calm market — that's the edge; obvious broad dips are
+crowded), scaling 0.50/1.00 on elevated/deep weakness.** Book B tilts the tranche by the AI `SIGNAL`
+via a fixed `signal_tilt` (×0.5–1.5, never tuned). A decision ledger scores each deploy
+worked/didn't/flat vs Nifty ~20 trading days later; a running AI hit-rate. **Iron rules held:** all
+research-side + fake money (product's clean ₹2L GO run UNTOUCHED); the AI is context-only and NEVER
+validates the math or touches Book A; "opportunism = the validated engine, NOT a learning/prediction
+model — the study *measures*, it doesn't claim." **Done (Phase 1, tested, on branch):**
+`reports/PREREGISTRATION_forward_study.md` + `src/qalpha_research/forward_study.py` (AISignal +
+`parse_ai_signal` from the SIGNAL line, `signal_tilt`, `deploy_fraction`/`book_deploy_amount`,
+capital-flow-aware `Book` [injections tracked apart from value so a top-up never fakes profit],
+`Decision` ledger + `resolve_decision`/`ai_hit_rate`, JSON persistence) + `tests/test_forward_study.py`
+(all green). **NEXT — Phase 2:** a daily runner + CLI (`init`, `add-fake-cash <amt>`, `daily`) that
+downloads the Nifty-100 watchlist prices (yfinance), deploys Books A/B via the validated
+`advise_deploy_into_weakness` (B tilted), buy-holds C, resolves due decisions, persists; wire into the
+cron (paced so a tranche doesn't drain the wallet daily — deploy on a cadence + on each injection + on
+weakness escalation). **Phase 3:** a dashboard "Did it work?" panel (A/B/C curves + ledger + AI
+hit-rate) + a per-decision resolution note. Telegram intentionally OFF for the study (still pre-GO).
+
+**Bigger-picture workflow the user confirmed (2026-07-11):** Zerodha is **execution + funding only** —
+he places every real order there; everything else (advice, tax, alerts, explanations, this study) lives
+in Q-Alpha. **Real Zerodha NEVER auto-trades** (his rule + Zerodha ToS on unattended tokens + the human
+is the circuit-breaker). Auto-investing is fine ONLY on the fake/paper books to build trust. An
+optional future flourish he likes: a Haiku "explain it to me" concierge that *narrates* the
+deterministic recommendation (explains, never computes) — not yet built.
+
+## 🧭 CURRENT STATE — (2026-06-19)
 
 **For the full, interviewer-level overview read [README.md](README.md) — it now carries the whole
 research arc (plain-language + the math + an explicit "biases & decisions" section).** This CLAUDE.md is
