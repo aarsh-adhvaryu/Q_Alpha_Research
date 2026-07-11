@@ -4,35 +4,88 @@ Guidance for Claude Code working in the **research / frontier** repo.
 
 ## 🧭 CURRENT STATE — read this FIRST (2026-07-11)
 
-**The A/B/C forward study is now BUILT end-to-end on branch `forward-study` (Phase 1 + 2 + 3 done,
-NOT yet merged).** It answers the user's question — *"the model recommended, the AI gave insight, the
-system invested: did it work? did the AI help? did I lose money?"* — forward, on **fake money**, as a
-new parameter of the complete-system test while the real GO still waits on the calendar.
-- **Phase 1 (pure tested core, prior session):** `src/qalpha_research/forward_study.py` — AI-signal
-  parse, fixed `signal_tilt` (clamped ×0.5–1.5), weakness tranche sizing, capital-flow-aware `Book`
-  (contributions tracked apart from value), `Decision`/`resolve_decision`/`ai_hit_rate` ledger. The
-  `ai_brief` prompt emits a machine-readable `SIGNAL:` line. Pre-reg `reports/PREREGISTRATION_forward_study.md`.
-- **Phase 2 (the daily runner, this session):** `scripts/forward_study.py` — the thin I/O shell. Fetches
-  the Nifty-100 watchlist + NIFTYBEES from yfinance, injects the **pre-registered cash-flow** (₹1L seed
-  + ₹50k on the first session of each month, same into all three books), deploys each book through the
-  validated `qalpha` deploy engine (`advise_deploy_into_weakness`, ₹0-tax buys) — **A** no-AI, **B**
-  AI-tilted, **C** dumps every deposit into NIFTYBEES — logs decisions, resolves due ones (~20-trading-day
-  basket return vs Nifty), writes `data/forward_study_track.csv` + `reports/forward_study_dashboard.md`.
-  A **`inject AMOUNT --reason`** command lets the user add discretionary fake capital (IPO/tip/news)
-  **equally to all three books** so it can't bias the relative A/B/C verdict; each is logged.
-- **Phase 3 (surfacing):** committed MD dashboard (phone-viewable on GitHub, like `hedge_paper_dashboard.md`)
-  + a 5th pane in `scripts/mission_control_app.py`. Wired into the hedge cron as a **fail-soft** step
-  after the AI brief (so the fresh `SIGNAL:` is available); outputs committed alongside the hedge track.
-- **Cash-flow decision locked with the user (2026-07-11):** ₹1L seed + ₹50k/month **mechanical**
-  (pre-registered, reproducible) + **manual** injections on top (discretionary, logged, applied to all
-  three → relative verdict stays fair, absolute path disclosed as non-pre-registered).
-- **Iron rules intact:** fake money only, no real orders ever; the product's clean ₹2L paper GO run is
-  untouched; the AI is context-only (a fixed rule *acts* on its signal, the AI never computes money);
-  negatives are pre-committed as valid outcomes; this repo imports `qalpha`, the product never imports here.
-- **Gates green (72 tests; ruff/format/mypy/pytest pass).** **Unverified in sandbox:** the live yfinance
-  fetch in `_fetch_panel` (network) → **user verifies the first real `daily` run on the box** (the repo's
-  established pattern; the qalpha deploy integration + resolve + dashboard were smoke-tested on a synthetic
-  panel). **NOT committed yet** — offer the user the commit.
+**Everything below this block is the older working log; this block is what's true now.** The
+**"Daily-Driver Ops Layer"** (plan lives in the product repo's `PLAN_OPS_LAYER.md`) is built and its
+research half is **merged + live**. On top of it we added a plain-English dashboard pass, a
+whole-system integration layer, and started a pre-registered forward study. **Both repos green.**
+
+**MERGED to `main` (live):**
+- **Ops-Layer PR-3 (#5) — hedge-flip Telegram alert.** `src/qalpha_research/notify.py` (deliberate
+  stdlib copy of the product sender; repos stay decoupled), `scripts/hedge_paper.py` gained
+  `_should_alert`/`hedge_alert_message` + JSON state `data/hedge_alert_state.json`; the `daily` cron
+  sends on a hedge ON/OFF flip; `test-alert`/`pipeline-failed` subcommands. `hedge_paper.yml` wired.
+- **Ops-Layer PR-4 (#6) — daily AI market brief.** `src/qalpha_research/ai_brief.py` +
+  `scripts/ai_brief.py` + vendored `data/nifty100_watchlist.csv`; `ai` extra = **anthropic**. **Model =
+  Claude Haiku 4.5** (Opus was overkill for a context-only digest; Gemini free tier was tried first but
+  its Google-Search grounding needs billing → 429). Uses the basic `web_search_20250305` tool (no
+  `allowed_domains` — Indian news sites block Anthropic's crawler → 400; thinking/effort omitted, N/A
+  on Haiku). **Context-only, never a signal**; emits a "Likely reaction" read + a machine-readable
+  `SIGNAL: lean=..; band=..; confidence=..` last line (for the forward study). Token-usage footer on
+  the brief (visible without the console). **Cost reality: web-search results bill as INPUT tokens →
+  ~40k in/brief ≈ ~₹6–8/day.** Rides `hedge_paper.yml` after the hedge mark.
+- **Dashboard clarity + whole-system layer (#7).** `regime/hedge_readout.py` (plain-English
+  summary/gauge-read/glossary) into `hedge_dashboard_app.py` (which now also surfaces the AI brief).
+  **`src/qalpha_research/system_check.py`** = the whole-system integration check (per-subsystem health
+  across BOTH seams: code seam = hedge overlay runs on the validated `qalpha` engine; data seam =
+  product's committed `reports/paper_dashboard.md` fetched over the PUBLIC repo, NOT imported).
+  **`scripts/system_check.py`** CLI (`--offline`; exit 0 iff all critical green) + a daily
+  `continue-on-error` heartbeat step in `hedge_paper.yml`. **`scripts/mission_control_app.py`** = one
+  Streamlit screen: health board + product paper book (fetched) + hedge + AI brief.
+- **Streamlit deploy fix (#8).** `requirements.txt` now pins `qalpha @ git+https://…Q_Alpha.git@main` —
+  Streamlit Cloud installs with **pip**, which ignores `[tool.uv.sources]`, so bare `qalpha` fails
+  ("No matching distribution found"). Verified with a clean pip install. Deploy mission-control as its
+  own Streamlit app (entry `scripts/mission_control_app.py`, branch main); reboot to pick up the fix.
+
+**Secrets on this repo's Actions:** `ANTHROPIC_API_KEY`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` all
+set. `GEMINI_API_KEY` deleted. Telegram bot **@qalphastocks_bot**, chat_id **8936117519**.
+
+**✅ A/B/C FORWARD STUDY — BUILT END-TO-END (branch `forward-study`, pushed, PR pending merge).**
+Answers the user's ask: *"the model recommends, the AI adds insight, the system invests (fake money) —
+did it work? did I lose money? does the AI help?"* — a **new parameter in the complete-system test**
+while we still wait on GO. **Read `reports/PREREGISTRATION_forward_study.md` first** (the contract).
+Three fake-money books, identical cash flows — **A** strategy only · **B** strategy + AI nudge · **C**
+buy-and-hold NIFTYBEES. The engine deploys a **tranche** of the idle wallet into the most out-of-favour
+*individual* names — **always opportunistic (0.25 base even in a calm market — the edge; broad dips are
+crowded), scaling 0.50/1.00 on elevated/deep weakness.** Book B tilts the tranche by the AI `SIGNAL`
+via a fixed `signal_tilt` (×0.5–1.5, never tuned). A decision ledger scores each deploy
+worked/didn't/flat vs Nifty ~20 trading days later + a running AI hit-rate. **Iron rules held:** all
+research-side + fake money (product's clean ₹2L GO run UNTOUCHED); the AI is context-only and NEVER
+validates the math or touches Book A; "opportunism = the validated engine, NOT a learning/prediction
+model — the study *measures*, doesn't claim."
+- **Phase 1 (pure tested core):** `src/qalpha_research/forward_study.py` — `parse_ai_signal`,
+  `signal_tilt`, `deploy_fraction`/`book_deploy_amount`, capital-flow-aware `Book` (injections tracked
+  apart from value), `Decision`/`resolve_decision`/`ai_hit_rate`; `ai_brief` emits the `SIGNAL:` line.
+- **Phase 2 (daily runner):** `scripts/forward_study.py` — fetch watchlist + NIFTYBEES (yfinance),
+  inject the pre-registered cash flow, deploy A/B via `advise_deploy_into_weakness` (B tilted) + buy-hold
+  C, log/resolve decisions, write `data/forward_study_track.csv` + `reports/forward_study_dashboard.md`.
+  `inject AMOUNT --reason` = discretionary manual top-up into all three books (can't bias the relative
+  verdict; logged). Core helpers added: `scheduled_injection`, `basket_value`, `pct_return`, `due_decisions`.
+- **Phase 3 (surfacing):** committed MD dashboard + a 5th pane in `mission_control_app.py`; wired
+  **fail-soft** into `hedge_paper.yml` after the AI brief; outputs committed with the hedge track.
+- **Cash-flow decision locked (2026-07-11):** ₹1L seed + ₹50k/month **mechanical** (pre-registered) +
+  **manual** injections on top (discretionary, logged, applied to all three → relative verdict stays
+  fair, absolute path disclosed as non-pre-registered).
+- **Gates green (72 tests).** yfinance fetch UNVERIFIED in sandbox (no net) → verify via a research
+  `workflow_dispatch` run (cron step is `continue-on-error`, so a silent fetch failure won't red the
+  cron — watch the dashboard "N marks · as of" line). Telegram intentionally OFF for the study (pre-GO).
+
+**✅ UNIFIED DASHBOARD — the whole final system on one screen (product branch `unified-dashboard`,
+pushed, PR pending merge).** User: "combine all 3 Streamlit apps into 1, see the final system before the
+GO." Product `scripts/dashboard_app.py` now has 3 top-level tabs — 📄 Paper book · 🔴 Live (Zerodha) ·
+**🔬 Research (NEW)** which HTTP-fetches this repo's committed `hedge_paper_dashboard.md` +
+`forward_study_dashboard.md` + `ai_brief.md` and renders them read-only (fail-soft, 30-min cache).
+**DATA SEAM, not a code import — the product still never imports research; engine/headline untouched.**
+**MERGE ORDER:** research `forward-study`→main FIRST (starts the cron gathering + publishes the
+forward-study report), THEN product `unified-dashboard`→main (Streamlit auto-redeploys the one app);
+the hedge + AI-brief panes light up immediately, the forward-study pane shows a graceful placeholder
+until the research branch merges.
+
+**Bigger-picture workflow the user confirmed (2026-07-11):** Zerodha is **execution + funding only** —
+he places every real order there; everything else (advice, tax, alerts, explanations, this study) lives
+in Q-Alpha. **Real Zerodha NEVER auto-trades** (his rule + Zerodha ToS on unattended tokens + the human
+is the circuit-breaker). Auto-investing is fine ONLY on the fake/paper books to build trust. An
+optional future flourish he likes: a Haiku "explain it to me" concierge that *narrates* the
+deterministic recommendation (explains, never computes) — not yet built.
 
 ## 🧭 CURRENT STATE — (2026-06-19)
 
