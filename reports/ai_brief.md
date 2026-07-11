@@ -1,25 +1,22 @@
 🧠 AI market brief — context only, not a signal.
 
-**Sentiment**: 🟢 India's BSE Sensex closed about 1.1% firmer at 77,569.4 on Friday, extending prior session's gains, led by tech stocks, while easing oil prices provided further support.
+**Sentiment**: 🟢 Sensex rose 1.08% Friday on TCS earnings strength and easing oil prices, with broader Asian upside offsetting FII outflows.
 
 **Drivers**:
-1. **IT strength & AI narrative** – TCS reported a $9.5 billion order book and $2.6 billion in annualized AI revenue, with Tech Mahindra and HCL Tech also advancing. This lifts INFY, TCS, TECHM, HCLTECH despite modest macro headwinds.
-2. **Crude stability & geopolitical offset** – Crude oil price stands at $76.08 per barrel, an increase from yesterday's $74.12. Investors welcomed reports that the US and Iran will continue their technical talks despite recent clashes. Lower volatility near $71–76/bbl eases OMC margin compression; lighter tailwind vs. downside risk.
-3. **FII cautious return** – Foreign Institutional Investors are putting money into Indian stocks again, with inflows linked to optimism around artificial intelligence and geopolitics.
+1. **IT earnings + AI tailwind** → TCS reported $9.5B order book and $2.6B annualized AI revenue, lifting tech sector. Stock-picking across HCLTECH, TECHM, INFY favored.
+2. **Crude oil easing + rupee strength** → Oil decline provides inflation relief; currency stability supports domestic equities. OMC/energy margins stabilize; aviation/paint input costs ease.
+3. **Geopolitical reprieve (near-term)** → US-Iran technical talks continuing despite clashes damps immediate Strait of Hormuz risk.
 
-**Watchlist names affected**:  
-TCS, INFY, TECHM, HCLTECH (IT rally). RELIANCE, BPCL, IOC (crude-linked). AXISBANK, KOTAKBANK (fund flows, earnings support).
+**Watchlist names affected**: TCS, TECHM, HCLTECH (IT strength); RELIANCE, IOC, BPCL (energy stability); AXISBANK (finance followthrough); ETERNAL (outlier weakness, watch).
 
-**Likely reaction**:  
-Index likely to **drift flat to modestly up (+0.2–0.6%)** over next 1–2 sessions on **medium confidence**. IT momentum continues on earnings optimism; crude plateau and Iran truce-talk optimism remove near-term shock risk. However, market sentiment was tempered by renewed foreign investor outflows last week, so new inflows need sustaining. Most likely movers: **INFY, TCS +0.3–1.0%** on AI narrative; **BPCL flat to –0.2%** if crude steadies (no margin urgency).
+**Likely reaction**: Near-term **+0.3–0.7%** over next 1–2 sessions, **medium confidence**. Index likely to consolidate post-Friday's 1% pop; IT/INFRA beneficiaries (TCS, HCLTECH) hold best momentum if earnings cycle maintains. FII outflows (₹2,603 Cr Jul 10) remain a dampener—watch reversals for confirmation.
 
-**Discretionary ideas**:  
-None; market context favours defensive hold and IT accumulation on dips—satellite sleeve rules apply.
+**Discretionary ideas**: 
+- RELIANCE: Oil stability + $9.5B global capex appetite = indirect AI infrastructure play (satellite sleeve rules apply).
+- HCLTECH: AI revenue exposure + rupee weakness hedge; tick chart above ₹3,200 into strength (satellite sleeve rules apply).
 
-**Risk note**: Market participants are now focused on upcoming quarterly earnings from other major companies to gauge the strength of India's earnings season; disappointing Q1 results or fresh Middle East escalation could snap the narrow rally.
+**Risk note**: Inflation poised to exceed RBI's 4% target for first time in 16 months—policy shifts ahead; geopolitical escalation (Hormuz) could reverse crude relief instantly.
 
----
+SIGNAL: lean=up; band=0.3..0.7; confidence=medium
 
-SIGNAL: lean=up; band=0.2..0.6; confidence=medium
-
-— 🤖 claude-haiku-4-5 · 31,417 in / 938 out tokens · ✓ complete
+— 🤖 claude-haiku-4-5 · 34,650 in / 864 out tokens · ✓ complete
