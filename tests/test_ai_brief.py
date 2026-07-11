@@ -29,6 +29,12 @@ def test_build_prompt_asks_for_likely_reaction_framed_as_non_signal() -> None:
     assert "confidence" in prompt.lower()  # the light quantitative element
 
 
+def test_build_prompt_requests_machine_readable_signal_line() -> None:
+    # Book B of the forward study consumes a structured SIGNAL line deterministically.
+    prompt = build_prompt(["RELIANCE:ENERGY"])
+    assert "SIGNAL: lean=" in prompt and "confidence=" in prompt
+
+
 def test_format_prepends_preamble_when_missing() -> None:
     out = format_for_telegram("Markets rose today on strong earnings.")
     assert out.startswith(CONTEXT_PREAMBLE)

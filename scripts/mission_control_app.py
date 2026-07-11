@@ -9,8 +9,8 @@ research into the product.
 
     uv run --extra dashboard streamlit run scripts/mission_control_app.py
 
-Four panes: whole-system health · product paper book (fetched status) · research hedge overlay ·
-today's AI market brief. Trades nothing; the product never imports from here.
+Five panes: whole-system health · product paper book (fetched status) · research hedge overlay ·
+today's AI market brief · the A/B/C forward study. Trades nothing; the product never imports from here.
 """
 
 from __future__ import annotations
@@ -96,6 +96,21 @@ def main() -> None:
         )
     else:
         st.info("No brief yet — the daily cron writes it after market close.")
+
+    # 5. The A/B/C forward study — did the system make money, and did the AI help? (fake money).
+    st.divider()
+    st.subheader("🧪 Forward study — did it work, did the AI help?")
+    study_md = Path("reports/forward_study_dashboard.md")
+    if study_md.exists():
+        st.markdown(study_md.read_text(encoding="utf-8"))
+        st.caption(
+            "Fake money, pre-registered — measures A (strategy) vs B (strategy+AI) vs C (buy-and-hold). "
+            "Low power until ≥3 months + a real volatility event; not a verdict yet."
+        )
+    else:
+        st.info(
+            "No study marks yet — the daily cron writes them via `scripts/forward_study.py daily`."
+        )
 
 
 if __name__ == "__main__":

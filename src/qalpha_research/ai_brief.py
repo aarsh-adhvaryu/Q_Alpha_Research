@@ -85,6 +85,11 @@ def build_prompt(watchlist_lines: list[str]) -> str:
         "6. **Risk note**: one line.\n\n"
         "This is CONTEXT for a human, NOT a trade signal; never imply certainty or a recommendation "
         "the system will act on.\n\n"
+        "Finally, on the VERY LAST line, emit one machine-readable tag matching your likely-reaction "
+        "call, exactly in this form (no other text on that line):\n"
+        "SIGNAL: lean=<up|flat|down>; band=<low>..<high>; confidence=<low|medium|high>\n"
+        "(e.g. 'SIGNAL: lean=up; band=0.4..0.9; confidence=medium'). This is read by a research study "
+        "that measures, forward, whether acting on your read helps — it changes no real allocation.\n\n"
         f"Watchlist (TICKER:SECTOR): {watchlist}"
     )
 

@@ -39,30 +39,46 @@ whole-system integration layer, and started a pre-registered forward study. **Bo
 **Secrets on this repo's Actions:** `ANTHROPIC_API_KEY`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` all
 set. `GEMINI_API_KEY` deleted. Telegram bot **@qalphastocks_bot**, chat_id **8936117519**.
 
-**🚧 ACTIVE WIP — pre-registered A/B/C forward study (branch `forward-study`, pushed, NOT merged, no PR
-yet).** Answers the user's ask: *"the model recommends, the AI adds insight, the system invests (fake
-money) — did it work? did I lose money? does the AI help?"* — a **new parameter in the complete-system
-test** while we still wait on GO. **Read `reports/PREREGISTRATION_forward_study.md` first** (the
-contract). Design: three fake-money books with identical (fake) cash injections — **A** strategy only ·
-**B** strategy + AI nudge · **C** buy-and-hold NIFTYBEES. The **wallet = idle fake cash**; the user
-tops it up; the engine deploys a **tranche** into the most out-of-favour *individual* names —
-**always opportunistic (0.25 base even in a calm market — that's the edge; obvious broad dips are
+**✅ A/B/C FORWARD STUDY — BUILT END-TO-END (branch `forward-study`, pushed, PR pending merge).**
+Answers the user's ask: *"the model recommends, the AI adds insight, the system invests (fake money) —
+did it work? did I lose money? does the AI help?"* — a **new parameter in the complete-system test**
+while we still wait on GO. **Read `reports/PREREGISTRATION_forward_study.md` first** (the contract).
+Three fake-money books, identical cash flows — **A** strategy only · **B** strategy + AI nudge · **C**
+buy-and-hold NIFTYBEES. The engine deploys a **tranche** of the idle wallet into the most out-of-favour
+*individual* names — **always opportunistic (0.25 base even in a calm market — the edge; broad dips are
 crowded), scaling 0.50/1.00 on elevated/deep weakness.** Book B tilts the tranche by the AI `SIGNAL`
 via a fixed `signal_tilt` (×0.5–1.5, never tuned). A decision ledger scores each deploy
-worked/didn't/flat vs Nifty ~20 trading days later; a running AI hit-rate. **Iron rules held:** all
+worked/didn't/flat vs Nifty ~20 trading days later + a running AI hit-rate. **Iron rules held:** all
 research-side + fake money (product's clean ₹2L GO run UNTOUCHED); the AI is context-only and NEVER
 validates the math or touches Book A; "opportunism = the validated engine, NOT a learning/prediction
-model — the study *measures*, it doesn't claim." **Done (Phase 1, tested, on branch):**
-`reports/PREREGISTRATION_forward_study.md` + `src/qalpha_research/forward_study.py` (AISignal +
-`parse_ai_signal` from the SIGNAL line, `signal_tilt`, `deploy_fraction`/`book_deploy_amount`,
-capital-flow-aware `Book` [injections tracked apart from value so a top-up never fakes profit],
-`Decision` ledger + `resolve_decision`/`ai_hit_rate`, JSON persistence) + `tests/test_forward_study.py`
-(all green). **NEXT — Phase 2:** a daily runner + CLI (`init`, `add-fake-cash <amt>`, `daily`) that
-downloads the Nifty-100 watchlist prices (yfinance), deploys Books A/B via the validated
-`advise_deploy_into_weakness` (B tilted), buy-holds C, resolves due decisions, persists; wire into the
-cron (paced so a tranche doesn't drain the wallet daily — deploy on a cadence + on each injection + on
-weakness escalation). **Phase 3:** a dashboard "Did it work?" panel (A/B/C curves + ledger + AI
-hit-rate) + a per-decision resolution note. Telegram intentionally OFF for the study (still pre-GO).
+model — the study *measures*, doesn't claim."
+- **Phase 1 (pure tested core):** `src/qalpha_research/forward_study.py` — `parse_ai_signal`,
+  `signal_tilt`, `deploy_fraction`/`book_deploy_amount`, capital-flow-aware `Book` (injections tracked
+  apart from value), `Decision`/`resolve_decision`/`ai_hit_rate`; `ai_brief` emits the `SIGNAL:` line.
+- **Phase 2 (daily runner):** `scripts/forward_study.py` — fetch watchlist + NIFTYBEES (yfinance),
+  inject the pre-registered cash flow, deploy A/B via `advise_deploy_into_weakness` (B tilted) + buy-hold
+  C, log/resolve decisions, write `data/forward_study_track.csv` + `reports/forward_study_dashboard.md`.
+  `inject AMOUNT --reason` = discretionary manual top-up into all three books (can't bias the relative
+  verdict; logged). Core helpers added: `scheduled_injection`, `basket_value`, `pct_return`, `due_decisions`.
+- **Phase 3 (surfacing):** committed MD dashboard + a 5th pane in `mission_control_app.py`; wired
+  **fail-soft** into `hedge_paper.yml` after the AI brief; outputs committed with the hedge track.
+- **Cash-flow decision locked (2026-07-11):** ₹1L seed + ₹50k/month **mechanical** (pre-registered) +
+  **manual** injections on top (discretionary, logged, applied to all three → relative verdict stays
+  fair, absolute path disclosed as non-pre-registered).
+- **Gates green (72 tests).** yfinance fetch UNVERIFIED in sandbox (no net) → verify via a research
+  `workflow_dispatch` run (cron step is `continue-on-error`, so a silent fetch failure won't red the
+  cron — watch the dashboard "N marks · as of" line). Telegram intentionally OFF for the study (pre-GO).
+
+**✅ UNIFIED DASHBOARD — the whole final system on one screen (product branch `unified-dashboard`,
+pushed, PR pending merge).** User: "combine all 3 Streamlit apps into 1, see the final system before the
+GO." Product `scripts/dashboard_app.py` now has 3 top-level tabs — 📄 Paper book · 🔴 Live (Zerodha) ·
+**🔬 Research (NEW)** which HTTP-fetches this repo's committed `hedge_paper_dashboard.md` +
+`forward_study_dashboard.md` + `ai_brief.md` and renders them read-only (fail-soft, 30-min cache).
+**DATA SEAM, not a code import — the product still never imports research; engine/headline untouched.**
+**MERGE ORDER:** research `forward-study`→main FIRST (starts the cron gathering + publishes the
+forward-study report), THEN product `unified-dashboard`→main (Streamlit auto-redeploys the one app);
+the hedge + AI-brief panes light up immediately, the forward-study pane shows a graceful placeholder
+until the research branch merges.
 
 **Bigger-picture workflow the user confirmed (2026-07-11):** Zerodha is **execution + funding only** —
 he places every real order there; everything else (advice, tax, alerts, explanations, this study) lives
