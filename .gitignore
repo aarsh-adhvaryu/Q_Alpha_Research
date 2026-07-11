@@ -22,3 +22,6 @@ reports/*.png
 *.env
 !.env.example
 secrets/
+
+# Forward-study price cache (regenerable from yfinance; keep the repo light)
+data/forward_study_prices.parquet

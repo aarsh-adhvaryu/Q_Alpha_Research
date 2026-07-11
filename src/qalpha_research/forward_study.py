@@ -83,6 +83,37 @@ def signal_tilt(signal: AISignal | None) -> float:
     return max(_TILT_MIN, min(_TILT_MAX, tilt))
 
 
+# ---- cash-flow schedule (pre-registered; see the prereg) -----------------------------------------
+
+SEED_LUMP = Decimal("100000")  # one-time seed on FORWARD_START, all three books
+MONTHLY_DEPOSIT = Decimal(
+    "50000"
+)  # added on the first trading session of each month, all three books
+
+
+def scheduled_injection(
+    as_of: str, *, seeded: bool, last_deposit_month: str | None
+) -> tuple[Decimal, str | None]:
+    """The pre-registered mechanical deposit due on ``as_of`` (ISO ``YYYY-MM-DD``), and the new
+    'last deposited month' marker to persist.
+
+    - The **first-ever** run (``seeded`` False) deposits ``SEED_LUMP`` and also counts as that month's
+      deposit, so the seed month isn't double-funded.
+    - Otherwise, the **first run in a new calendar month** deposits ``MONTHLY_DEPOSIT`` (holiday-robust:
+      whatever the first *observed* session of the month is).
+    - Any later run in the same month deposits ₹0.
+
+    Manual injections are handled separately (they are discretionary, not scheduled). Returns
+    ``(amount, new_last_deposit_month)`` where the month marker is ``"YYYY-MM"``.
+    """
+    month = as_of[:7]
+    if not seeded:
+        return SEED_LUMP, month
+    if month != last_deposit_month:
+        return MONTHLY_DEPOSIT, month
+    return Decimal("0"), last_deposit_month
+
+
 # ---- deploy sizing (tranche of the wallet, scaling with weakness) --------------------------------
 
 # Fraction of the idle wallet to deploy at each market-weakness level. Always opportunistic (a base
@@ -263,6 +294,26 @@ def ai_hit_rate(decisions: list[Decision]) -> tuple[int, int]:
     resolved = [d for d in decisions if d.resolved and d.book == "B"]
     worked = sum(1 for d in resolved if d.verdict == "worked")
     return worked, len(resolved)
+
+
+# ---- outcome scoring helpers (pure) --------------------------------------------------------------
+
+
+def basket_value(basket: dict[str, int], prices: dict[str, Decimal]) -> Decimal:
+    """Mark a bought basket (ticker → qty) to ``prices`` (a missing price contributes 0)."""
+    return sum((prices.get(t, Decimal("0")) * q for t, q in basket.items()), start=Decimal("0"))
+
+
+def pct_return(entry: Decimal, exit_: Decimal) -> float:
+    """Simple percentage return ``(exit/entry − 1) × 100``; 0.0 when ``entry`` is non-positive."""
+    if entry <= 0:
+        return 0.0
+    return float((exit_ - entry) / entry) * 100.0
+
+
+def due_decisions(ledger: list[Decision], as_of: str) -> list[Decision]:
+    """Unresolved decisions whose ``resolve_on`` has arrived (``≤ as_of``) — ready to be scored."""
+    return [d for d in ledger if not d.resolved and d.resolve_on <= as_of]
 
 
 # ---- persistence ----------------------------------------------------------------------------------

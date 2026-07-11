@@ -5,14 +5,20 @@ from __future__ import annotations
 from decimal import Decimal
 
 from qalpha_research.forward_study import (
+    MONTHLY_DEPOSIT,
+    SEED_LUMP,
     AISignal,
     Book,
     Decision,
     ai_hit_rate,
+    basket_value,
     book_deploy_amount,
     deploy_fraction,
+    due_decisions,
     parse_ai_signal,
+    pct_return,
     resolve_decision,
+    scheduled_injection,
     signal_tilt,
 )
 
@@ -159,3 +165,45 @@ def test_ai_hit_rate_counts_only_resolved_book_b() -> None:
 def test_decision_round_trip() -> None:
     d = resolve_decision(_decision(), 2.1, 0.9)
     assert Decision.from_dict(d.to_dict()) == d
+
+
+# ---- cash-flow schedule ------------------------------------------------------------------------
+
+
+def test_first_run_seeds_and_marks_the_month() -> None:
+    amount, month = scheduled_injection("2026-07-11", seeded=False, last_deposit_month=None)
+    assert amount == SEED_LUMP
+    assert month == "2026-07"  # the seed also counts as July's deposit → no double-fund
+
+
+def test_new_month_deposits_once_then_zero() -> None:
+    first, m1 = scheduled_injection("2026-08-03", seeded=True, last_deposit_month="2026-07")
+    assert first == MONTHLY_DEPOSIT and m1 == "2026-08"
+    again, m2 = scheduled_injection("2026-08-19", seeded=True, last_deposit_month="2026-08")
+    assert again == Decimal("0") and m2 == "2026-08"  # same month → nothing more
+
+
+# ---- outcome scoring helpers -------------------------------------------------------------------
+
+
+def test_basket_value_marks_to_prices_and_skips_missing() -> None:
+    v = basket_value(
+        {"ITC.NS": 2, "TCS.NS": 1}, {"ITC.NS": Decimal("400"), "TCS.NS": Decimal("3800")}
+    )
+    assert v == Decimal("4600")
+    assert basket_value({"X.NS": 3}, {}) == Decimal("0")  # missing price contributes 0
+
+
+def test_pct_return_and_guard() -> None:
+    assert pct_return(Decimal("100"), Decimal("110")) == 10.0
+    assert pct_return(Decimal("0"), Decimal("110")) == 0.0  # non-positive entry guarded
+
+
+def test_due_decisions_selects_unresolved_and_arrived() -> None:
+    ledger = [
+        Decision("2026-07-10", "A", "1", {}, "", "", resolve_on="2026-08-07"),
+        Decision("2026-07-10", "B", "1", {}, "", "", resolve_on="2026-09-01"),
+        resolve_decision(_decision(), 3.0, 1.0),  # already resolved → excluded
+    ]
+    due = due_decisions(ledger, "2026-08-10")
+    assert [d.resolve_on for d in due] == ["2026-08-07"]  # only the arrived, unresolved one

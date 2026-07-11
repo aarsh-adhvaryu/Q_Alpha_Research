@@ -27,6 +27,23 @@ injection + when weakness escalates) so a tranche never drains the wallet in one
 = the validated deterministic engine; there is no learning/prediction model — the study *measures*
 whether the opportunism pays, forward. Nothing is claimed in advance.**
 
+**Cash-flow schedule — fixed here, pre-registered (locked with the user 2026-07-11).** A **₹1,00,000
+lump** seeds all three books on `FORWARD_START`, then a **₹50,000 fake deposit is *added* on the first
+trading day of each month** (the same deposits into all three). The deposit is money *contributed*,
+**not** the amount traded — books A/B accumulate it as dry powder and the tranche rule above decides
+how much of the *whole idle wallet* to deploy and when (25%/50%/100% by weakness), so calm weeks build
+powder and dips get fired into. Book C dumps every deposit straight into NIFTYBEES the same day. The
+monthly deposit lands on the first available trading session (a holiday rolls forward). Because every
+book gets identical cash flows, a value comparison is fair.
+
+**Manual injections (discretionary layer, honestly bounded).** On top of the mechanical schedule the
+user may inject extra fake capital by hand when a real-world opportunity appears (an IPO, a Telegram
+tip, a news catalyst). Each manual inject deposits the **same amount into all three books** and is
+**logged with the user's stated reason**. Because it is common to A, B and C, it **cannot bias the
+relative verdict** (A vs B vs C) — that is what the study claims. It only makes the *absolute* profit
+path non-pre-registered, which is disclosed: manual flows are excluded from any "pre-registered
+cash-flow" claim and shown separately on the dashboard.
+
 Money is `Decimal`. Each book tracks **net contributions** separately from value, so an injection is
 never counted as profit (`profit = value − net_contributions`).
 

@@ -2,7 +2,39 @@
 
 Guidance for Claude Code working in the **research / frontier** repo.
 
-## 🧭 CURRENT STATE — read this first (2026-06-19)
+## 🧭 CURRENT STATE — read this FIRST (2026-07-11)
+
+**The A/B/C forward study is now BUILT end-to-end on branch `forward-study` (Phase 1 + 2 + 3 done,
+NOT yet merged).** It answers the user's question — *"the model recommended, the AI gave insight, the
+system invested: did it work? did the AI help? did I lose money?"* — forward, on **fake money**, as a
+new parameter of the complete-system test while the real GO still waits on the calendar.
+- **Phase 1 (pure tested core, prior session):** `src/qalpha_research/forward_study.py` — AI-signal
+  parse, fixed `signal_tilt` (clamped ×0.5–1.5), weakness tranche sizing, capital-flow-aware `Book`
+  (contributions tracked apart from value), `Decision`/`resolve_decision`/`ai_hit_rate` ledger. The
+  `ai_brief` prompt emits a machine-readable `SIGNAL:` line. Pre-reg `reports/PREREGISTRATION_forward_study.md`.
+- **Phase 2 (the daily runner, this session):** `scripts/forward_study.py` — the thin I/O shell. Fetches
+  the Nifty-100 watchlist + NIFTYBEES from yfinance, injects the **pre-registered cash-flow** (₹1L seed
+  + ₹50k on the first session of each month, same into all three books), deploys each book through the
+  validated `qalpha` deploy engine (`advise_deploy_into_weakness`, ₹0-tax buys) — **A** no-AI, **B**
+  AI-tilted, **C** dumps every deposit into NIFTYBEES — logs decisions, resolves due ones (~20-trading-day
+  basket return vs Nifty), writes `data/forward_study_track.csv` + `reports/forward_study_dashboard.md`.
+  A **`inject AMOUNT --reason`** command lets the user add discretionary fake capital (IPO/tip/news)
+  **equally to all three books** so it can't bias the relative A/B/C verdict; each is logged.
+- **Phase 3 (surfacing):** committed MD dashboard (phone-viewable on GitHub, like `hedge_paper_dashboard.md`)
+  + a 5th pane in `scripts/mission_control_app.py`. Wired into the hedge cron as a **fail-soft** step
+  after the AI brief (so the fresh `SIGNAL:` is available); outputs committed alongside the hedge track.
+- **Cash-flow decision locked with the user (2026-07-11):** ₹1L seed + ₹50k/month **mechanical**
+  (pre-registered, reproducible) + **manual** injections on top (discretionary, logged, applied to all
+  three → relative verdict stays fair, absolute path disclosed as non-pre-registered).
+- **Iron rules intact:** fake money only, no real orders ever; the product's clean ₹2L paper GO run is
+  untouched; the AI is context-only (a fixed rule *acts* on its signal, the AI never computes money);
+  negatives are pre-committed as valid outcomes; this repo imports `qalpha`, the product never imports here.
+- **Gates green (72 tests; ruff/format/mypy/pytest pass).** **Unverified in sandbox:** the live yfinance
+  fetch in `_fetch_panel` (network) → **user verifies the first real `daily` run on the box** (the repo's
+  established pattern; the qalpha deploy integration + resolve + dashboard were smoke-tested on a synthetic
+  panel). **NOT committed yet** — offer the user the commit.
+
+## 🧭 CURRENT STATE — (2026-06-19)
 
 **For the full, interviewer-level overview read [README.md](README.md) — it now carries the whole
 research arc (plain-language + the math + an explicit "biases & decisions" section).** This CLAUDE.md is
