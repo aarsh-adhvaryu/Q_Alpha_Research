@@ -2,7 +2,19 @@
 
 Guidance for Claude Code working in the **research / frontier** repo.
 
-## 🧭 CURRENT STATE — read this FIRST (2026-07-11)
+## 🧭 CURRENT STATE — read this FIRST (2026-07-11, this repo is now the ARCHIVE)
+
+**The live system was unified into the product repo (the user's call — the pieces felt fragmented).**
+The **A/B/C forward study and the daily AI brief MOVED to `Q_Alpha`** (now `qalpha/live/autopilot.py`
++ `qalpha/live/ai_brief.py`, native, imported by the product's **🤖 Auto-pilot** dashboard tab). This
+repo no longer runs them: `hedge_paper.yml` dropped the AI-brief + forward-study steps (and the `ai`
+extra). **This repo is now the research archive** — the tax-free hedge forward run (still live on the
+cron) + the finished dead-ends (quantum/LPPLS/HMM). The old forward-study/ai-brief modules + committed
+data are left in place as history but are dormant (not run). The **one validation rule still holds**:
+every claim beats its baseline walk-forward net of cost+tax; negatives are published. (See the product
+repo's CLAUDE.md "unification" block for the live system.)
+
+## 🧭 CURRENT STATE — (2026-07-11, before the unification)
 
 **Everything below this block is the older working log; this block is what's true now.** The
 **"Daily-Driver Ops Layer"** (plan lives in the product repo's `PLAN_OPS_LAYER.md`) is built and its
