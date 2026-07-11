@@ -1,6 +1,11 @@
-# Streamlit Community Cloud entry point for the research hedge dashboard
-# (scripts/hedge_dashboard_app.py). Streamlit Cloud installs from this file; `-e .` pulls this repo
-# (which in turn resolves the qalpha engine via [tool.uv.sources]/pip) plus the UI + data deps.
+# Streamlit Community Cloud entry point for the research dashboards
+# (scripts/hedge_dashboard_app.py and scripts/mission_control_app.py).
+#
+# Streamlit Cloud installs with plain **pip**, which IGNORES pyproject's [tool.uv.sources]. So the
+# bare `qalpha` dependency can't resolve (it isn't on PyPI) and `-e .` fails with
+# "No matching distribution found for qalpha". Give pip a resolvable git URL for the validated engine
+# here — then `-e .` (this research package) is satisfied. (Locally, uv still uses [tool.uv.sources].)
+qalpha @ git+https://github.com/aarsh-adhvaryu/Q_Alpha.git@main
 -e .
 streamlit>=1.37
 yfinance>=0.2
