@@ -27,6 +27,12 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: uv run python scripts/ai_brief.py daily
+      - name: Whole-system health check (heartbeat in the log; never blocks)
+        continue-on-error: true # a health report must never red the cron — fail-soft like the rest
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: uv run python scripts/system_check.py --offline
       - name: Commit the track record
         run: |
           git config user.name "github-actions[bot]"

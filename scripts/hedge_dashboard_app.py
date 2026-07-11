@@ -23,8 +23,31 @@ from qalpha_research.regime.hedge_paper import (
     HedgePaperResult,
     forward_hedge_track,
 )
+from qalpha_research.regime.hedge_readout import (
+    hedge_gauge_read,
+    hedge_glossary,
+    hedge_plain_summary,
+)
 
 PANEL_CSV = Path("data/fragility_panel.csv")
+BRIEF_MD = Path("reports/ai_brief.md")
+
+
+def _ai_brief_section() -> None:
+    """Surface the daily AI market brief (committed by the cron) on the dashboard, if present."""
+    if not BRIEF_MD.exists():
+        return
+    text = BRIEF_MD.read_text(encoding="utf-8").strip()
+    if not text or "No brief generated yet" in text:
+        return
+    with st.expander(
+        "🧠 Today's AI market brief — news, sentiment & the likely reaction", expanded=True
+    ):
+        st.markdown(text)
+        st.caption(
+            "Context only, **not a signal** — an LLM's read of today's news for your judgement "
+            "(satellite sleeve), never a forecast the system trades on."
+        )
 
 
 @st.cache_data(ttl=3600)
@@ -43,6 +66,19 @@ def main() -> None:
         return
     res = _load()
 
+    # Plain-English summary + today's AI news brief first — everyday words before the technical panels.
+    st.info(
+        hedge_plain_summary(
+            level=res.level,
+            gauge=res.gauge_now,
+            tau=res.tau,
+            hedge_on=res.hedge_on,
+            days=res.days,
+            episodes=res.episodes,
+        )
+    )
+    _ai_brief_section()
+
     badge = {"elevated": "🔴", "watch": "🟠", "calm": "🟢"}[res.level]
     st.caption(
         f"Gauge-triggered short-futures hedge on a passive {res.base.upper()} book, run forward from "
@@ -55,6 +91,7 @@ def main() -> None:
     c2.metric("Hedge state", "🛡️ ON" if res.hedge_on else "off")
     c3.metric("Forward paper days", res.days)
     c4.metric("Hedge episodes", res.episodes)
+    st.caption(hedge_gauge_read(res.gauge_now, res.tau, res.level, hedge_on=res.hedge_on))
 
     st.subheader(f"{badge} Hedge {'ENGAGED' if res.hedge_on else 'standing by'}")
 
@@ -92,6 +129,9 @@ def main() -> None:
         "event, which can't be scheduled. If it holds through a live event over months, it is ready to "
         "integrate alongside the product's GO. Research only — the product never imports from here."
     )
+
+    with st.expander("📖 Jargon, in plain English — look anything up"):
+        st.markdown(hedge_glossary())
 
 
 if __name__ == "__main__":
