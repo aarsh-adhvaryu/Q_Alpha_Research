@@ -9,6 +9,8 @@ from qalpha_research.forward_study import (
     Book,
     Decision,
     ai_hit_rate,
+    book_deploy_amount,
+    deploy_fraction,
     parse_ai_signal,
     resolve_decision,
     signal_tilt,
@@ -44,6 +46,30 @@ def test_signal_tilt_rule() -> None:
     assert signal_tilt(AISignal("d", "down", "high", 0, 0)) == 0.6
     # clamp holds even if weights were extreme (they aren't, but the guard is real)
     assert 0.5 <= signal_tilt(AISignal("d", "down", "high", 0, 0)) <= 1.5
+
+
+# ---- deploy sizing -----------------------------------------------------------------------------
+
+
+def test_deploy_fraction_opportunistic_base_then_more_on_dips() -> None:
+    assert deploy_fraction("normal") == Decimal("0.25")  # never fully idle
+    assert deploy_fraction("elevated") == Decimal("0.50")
+    assert deploy_fraction("deep") == Decimal("1.00")
+    assert deploy_fraction("???") == Decimal("0")
+
+
+def test_book_deploy_amount_a_vs_b_and_cap() -> None:
+    wallet = Decimal("50000")
+    # Book A, elevated → 50% = 25,000 (no AI tilt)
+    assert book_deploy_amount(wallet, "elevated", None, ai=False) == Decimal("25000.00")
+    # Book B, elevated + AI bullish-high (1.4×) → 25,000 × 1.4 = 35,000
+    up = AISignal("d", "up", "high", 0.4, 0.9)
+    assert book_deploy_amount(wallet, "elevated", up, ai=True) == Decimal("35000.00")
+    # Book B, AI wary-high (0.6×) → 15,000
+    dn = AISignal("d", "down", "high", -0.9, -0.4)
+    assert book_deploy_amount(wallet, "elevated", dn, ai=True) == Decimal("15000.00")
+    # deep + AI bullish would exceed the wallet → capped at the wallet
+    assert book_deploy_amount(wallet, "deep", up, ai=True) == Decimal("50000.00")
 
 
 # ---- book accounting (capital-flow-aware) ------------------------------------------------------

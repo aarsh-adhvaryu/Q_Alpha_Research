@@ -14,9 +14,18 @@ value comparison is fair:
 
 | Book | Rule |
 |---|---|
-| **A — strategy only** | The validated deterministic `advise_deploy_into_weakness` deploys idle cash into market weakness (₹0-tax buys). No AI. |
+| **A — strategy only** | The validated deterministic `advise_deploy_into_weakness` deploys a **tranche of the idle wallet** into the most out-of-favour names (₹0-tax buys). No AI. |
 | **B — strategy + AI** | Identical, but the day's AI **signal** (`lean` × `confidence`) tilts the deploy size by a fixed, pre-registered rule (`signal_tilt`, clamped ×0.5–×1.5). Nothing discretionary. |
 | **C — buy-and-hold** | Every injection buys NIFTYBEES immediately and holds. The dumb baseline. |
+
+**Deploy schedule — always opportunistic, more on dips (fixed, not tuned).** The wallet is never
+fully idle: even a calm market gets a modest base deployment into the individual names most pulled
+back from their *own* 1-year high (the engine's per-name cheapness tilt — the real edge, since obvious
+broad dips are already crowded by funds/optimisers). The **tranche of the wallet** scales with broad
+weakness: `normal 0.25 · elevated 0.50 · deep 1.00`. Deploys are paced (on a cadence + on each
+injection + when weakness escalates) so a tranche never drains the wallet in one day. **"Opportunistic"
+= the validated deterministic engine; there is no learning/prediction model — the study *measures*
+whether the opportunism pays, forward. Nothing is claimed in advance.**
 
 Money is `Decimal`. Each book tracks **net contributions** separately from value, so an injection is
 never counted as profit (`profit = value − net_contributions`).

@@ -83,6 +83,31 @@ def signal_tilt(signal: AISignal | None) -> float:
     return max(_TILT_MIN, min(_TILT_MAX, tilt))
 
 
+# ---- deploy sizing (tranche of the wallet, scaling with weakness) --------------------------------
+
+# Fraction of the idle wallet to deploy at each market-weakness level. Always opportunistic (a base
+# even when calm — the engine tilts to the individual most out-of-favour names); more on dips.
+# Fixed here, not tuned to a result (pre-registered).
+_TRANCHE = {"normal": Decimal("0.25"), "elevated": Decimal("0.50"), "deep": Decimal("1.00")}
+
+
+def deploy_fraction(market_level: str) -> Decimal:
+    """The fraction of the idle wallet Book A deploys at this broad-weakness level."""
+    return _TRANCHE.get(market_level, Decimal("0"))
+
+
+def book_deploy_amount(
+    wallet: Decimal, market_level: str, signal: AISignal | None, *, ai: bool
+) -> Decimal:
+    """How much of the wallet to deploy today. Book A = tranche × wallet; Book B additionally tilts by
+    the AI signal. Always capped at the wallet and rounded to paise."""
+    amount = wallet * deploy_fraction(market_level)
+    if ai:
+        amount *= Decimal(str(signal_tilt(signal)))
+    amount = min(amount, wallet)
+    return amount.quantize(Decimal("0.01"))
+
+
 # ---- capital-flow-aware book accounting -----------------------------------------------------------
 
 
