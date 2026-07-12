@@ -14,6 +14,17 @@ data are left in place as history but are dormant (not run). The **one validatio
 every claim beats its baseline walk-forward net of cost+tax; negatives are published. (See the product
 repo's CLAUDE.md "unification" block for the live system.)
 
+**QUBO — QUESTION CLOSED (2026-07-12).** Stage A's committed follow-up ran (pre-reg
+`reports/PREREGISTRATION_qubo_lowturnover.md` → `reports/qubo_lowturnover_findings.md`): the
+**low-turnover QUBO** (incumbency switching-cost c=0.02, friction-derived, not tuned) on the **clean
+PIT Nifty-50** — **FAILED decisively** (11.5%/0.87 vs 1/N 17.3%/1.06, −5.8pt; plain-QUBO control
+−5.0pt). Stage A's "near-miss" was survivorship flattery; tax wasn't the binding drag on the clean
+book (₹26k) — trailing-252d μ is too noisy for subset selection (~11/20 names swapped/yr despite the
+penalty). This is the estimation-error result that motivates the product core's 1/N-anchored
+shrinkage. **QUBO's final status: quantum-formulation showcase (QAOA exact-optimum on a real reduced
+instance) + two published negatives. No forward-harness slot; do not reopen without new data
+(fundamentals/PIT-200) or a genuinely different estimator.**
+
 ## 🧭 CURRENT STATE — (2026-07-11, before the unification)
 
 **Everything below this block is the older working log; this block is what's true now.** The
