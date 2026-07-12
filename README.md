@@ -72,6 +72,17 @@ minimize   xᵀ Σ x  −  q · μᵀ x        subject to  Σ xᵢ = k       (x 
   reselection realizes ₹2.7L of tax (the tax-first thesis, again). And there's a **hard wall:** a
   100-stock quantum problem needs 2¹⁰⁰ states — infeasible on any simulator (the wall is already at ~10
   stocks). So quantum is a *showcase*, not a production tool, and we say so.
+- **The pre-registered follow-up CLOSED the question (2026-07-12,
+  `reports/qubo_lowturnover_findings.md`):** a **low-turnover QUBO** (incumbency switching-cost
+  `μ_eff = μ + c·held`, c = 2%/yr derived from real round-trip friction, not tuned) on the **clean
+  point-in-time Nifty-50** — where a real verdict is possible. **It failed decisively: 11.5% CAGR /
+  Sharpe 0.87 vs 1/N's 17.3% / 1.06 (−5.8pt).** Two lessons: the earlier "near-miss" was
+  **survivorship flattery** (the plain-QUBO control also lost, −5.0pt, on the clean universe), and tax
+  wasn't even the binding drag this time (₹26k vs ₹2.7L) — **trailing-year μ estimates are too noisy
+  for subset selection** (the book still swapped ~11/20 names a year despite the switching penalty).
+  That is the classic estimation-error result, and exactly why the product's validated core *anchors
+  to 1/N* (shrinkage) instead of trusting sample mean-variance. QUBO's final status: a validated
+  quantum-formulation showcase + two published honest negatives.
 
 ### Crash prediction (LPPLS) — negative
 Fitted the Sornette **Log-Periodic Power-Law Singularity** model (the math of a bubble accelerating
